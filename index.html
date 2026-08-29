@@ -41,6 +41,7 @@
   h1{font-family:'Oswald',sans-serif; font-weight:700; font-size:34px; letter-spacing:.01em;
     margin:0; text-transform:uppercase;}
   h1 span{color:var(--signal);}
+  .quote{font-size:12.5px; color:var(--chalk-dim); font-style:italic; margin:10px 0 0; line-height:1.4;}
 
   #onboarding{position:fixed; inset:0; background:rgba(10,14,12,0.92); z-index:2000;
     display:flex; align-items:center; justify-content:center; padding:24px;}
@@ -76,11 +77,20 @@
   .btn-primary:active{transform:scale(.98);}
   .btn-primary:disabled{background:var(--sage); color:var(--bg-2); opacity:.6;}
   .btn-ghost{background:transparent; border:1.5px solid var(--line); color:var(--chalk);}
+  .btn-row{display:flex; gap:10px;}
+  .btn-row button{width:auto; flex:1;}
+  .btn-small{padding:10px 14px; font-size:13px;}
+
+  .segmented{display:flex; background:var(--bg); border:1px solid var(--line); border-radius:12px;
+    padding:4px; margin-bottom:16px; gap:4px;}
+  .segmented button{flex:1; background:transparent; color:var(--chalk-dim); font-family:'Oswald';
+    font-size:12px; padding:9px 4px; border-radius:9px; width:auto;}
+  .segmented button.active{background:var(--signal); color:#1a0d05;}
 
   .pushup-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:12px;
     overflow:hidden; margin-bottom:16px;}
   video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1);}
-  canvas{position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1);}
+  canvas.overlay{position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1);}
   .hud{position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between;
     align-items:flex-start; pointer-events:none;}
   .hud .count{font-family:'Oswald'; font-size:44px; font-weight:700; color:var(--lane);
@@ -92,14 +102,6 @@
   .progress i{display:block; height:100%; background:var(--lane); border-radius:6px; transition:width .25s;}
   .progress-label{font-size:12px; color:var(--chalk-dim); display:flex; justify-content:space-between;}
 
-  nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
-    background:var(--bg-2); border-top:1px solid var(--line); display:flex;
-    padding:10px 12px calc(10px + env(safe-area-inset-bottom));}
-  nav button.tab{flex:1; background:transparent; padding:8px 4px; color:var(--chalk-dim); font-size:11.5px;}
-  nav button.tab.active{color:var(--signal);}
-  .hidden{display:none;}
-  .note{font-size:12px; color:var(--sage); margin-top:10px; line-height:1.5;}
-
   .streak{display:inline-flex; align-items:center; gap:6px; background:rgba(232,197,71,0.12);
     border:1px solid rgba(232,197,71,0.35); color:var(--lane); font-family:'Oswald'; font-size:13px;
     font-weight:600; letter-spacing:.02em; padding:6px 12px; border-radius:20px; margin-bottom:14px;}
@@ -109,6 +111,48 @@
   .stat{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px;}
   .stat .num{font-family:'Oswald'; font-size:26px; font-weight:700; color:var(--lane); line-height:1;}
   .stat .lbl{font-size:11.5px; color:var(--chalk-dim); margin-top:5px; text-transform:uppercase; letter-spacing:.03em;}
+
+  .badgegrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .badge{background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:12px 6px;
+    text-align:center; opacity:.4;}
+  .badge.unlocked{opacity:1; border-color:rgba(232,197,71,0.4); background:rgba(232,197,71,0.07);}
+  .badge-emoji{font-size:24px; margin-bottom:6px;}
+  .badge-title{font-family:'Oswald'; font-size:10.5px; font-weight:600; text-transform:uppercase; line-height:1.2;}
+  .badge-desc{font-size:9.5px; color:var(--chalk-dim); margin-top:3px; line-height:1.25;}
+
+  .monthnav{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .monthnav button{width:auto; padding:8px 16px; background:var(--bg); border:1px solid var(--line); color:var(--chalk);}
+  .monthnav button:disabled{opacity:.3;}
+  .monthlabel{font-family:'Oswald'; text-transform:capitalize; font-size:14px;}
+  .chart-legend{font-size:11px; color:var(--chalk-dim); margin-top:8px; display:flex; gap:14px; flex-wrap:wrap;}
+  .chart-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .chart-legend i{width:8px; height:8px; border-radius:50%; display:inline-block;}
+
+  .photo-daylabel{font-family:'Oswald'; font-size:12px; color:var(--chalk-dim); text-transform:uppercase;
+    letter-spacing:.04em; margin:18px 0 8px;}
+  .photo-daylabel:first-child{margin-top:0;}
+  .photo-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px;}
+  .photo-thumb{aspect-ratio:1; border-radius:8px; overflow:hidden; background:var(--bg); border:1px solid var(--line);}
+  .photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  #lightbox{position:fixed; inset:0; background:rgba(0,0,0,0.94); z-index:1500; display:flex;
+    align-items:center; justify-content:center; flex-direction:column; padding:24px;}
+  #lightbox img{max-width:100%; max-height:70vh; border-radius:10px;}
+  #lightbox .lb-date{color:var(--chalk-dim); font-size:12.5px; margin-top:14px;}
+  #lightbox .lb-actions{display:flex; gap:10px; margin-top:16px; width:100%; max-width:280px;}
+  #lightbox .lb-actions button{width:auto; flex:1;}
+  input[type=text], input[type=number]{width:100%; background:var(--bg); border:1.5px solid var(--line);
+    border-radius:10px; padding:13px 14px; color:var(--chalk); font-size:16px; font-family:'Work Sans'; margin-bottom:12px;}
+  input:focus{outline:none; border-color:var(--signal);}
+  .weight-list{margin-top:14px;}
+  .weight-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .weight-row .d{color:var(--chalk-dim);}
+  .weight-row .v{font-family:'Oswald'; font-weight:600;}
+
+  nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    background:var(--bg-2); border-top:1px solid var(--line); display:flex;
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+  nav button.tab{flex:1; background:transparent; padding:7px 2px; color:var(--chalk-dim); font-size:10px;}
+  nav button.tab.active{color:var(--signal);}
 
   #celebrate{position:fixed; inset:0; pointer-events:none; z-index:999; overflow:hidden;}
   #celebrate span{position:absolute; top:-40px; font-size:22px; animation:fall 1.6s ease-in forwards;}
@@ -121,6 +165,7 @@
     padding:12px 20px; border-radius:30px; z-index:1000; transition:transform .35s ease; text-align:center;
     box-shadow:0 6px 20px rgba(0,0,0,.35); max-width:80%;}
   #toast.show{transform:translateX(-50%) translateY(0);}
+  .note{font-size:12px; color:var(--sage); margin-top:10px; line-height:1.5;}
 </style>
 </head>
 <body>
@@ -134,64 +179,120 @@
     <button class="btn-primary" id="nameSubmit">Start</button>
   </div>
 </div>
+<div id="lightbox" class="hidden"></div>
+
 <div id="app">
   <header>
     <p class="eyebrow" id="eyebrowText">Dag <span id="streakDay">—</span> · blijf bewegen</p>
     <h1>M<span>.</span></h1>
+    <p class="quote" id="quoteText"></p>
   </header>
 
   <main>
-    <!-- LOPEN TAB -->
-    <section id="tab-lopen">
+    <!-- BEWEGEN TAB -->
+    <section id="tab-bewegen">
+
       <div class="card">
-        <h2>Hardlopen</h2>
-        <p class="sub">Doel: 3x per week. Vink af zodra je geweest bent.</p>
-        <div class="streak" id="runStreak">🔥 0 weken streak</div>
-        <div class="weekrow" id="weekRow"></div>
-        <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
-        <div style="height:14px"></div>
-        <button class="btn-primary" id="logRunBtn">Ik heb vandaag gelopen</button>
-        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch. Streak = aantal weken op rij dat je 3x hebt gehaald.</p>
+        <h2>Uitdaging van de dag</h2>
+        <p class="sub" id="challengeText">—</p>
+        <button class="btn-primary" id="challengeBtn">Voltooid ✓</button>
       </div>
-    </section>
 
-    <!-- FITNESS TAB -->
-    <section id="tab-fitness" class="hidden">
-      <div class="card">
-        <h2>Fitness</h2>
-        <p class="sub">Doel: 3x per week krachttraining. Vink af zodra je getraind hebt.</p>
-        <div class="streak" id="fitnessStreak">🔥 0 weken streak</div>
-        <div class="weekrow" id="weekRowFitness"></div>
-        <div class="bignum" id="fitnessCount">0<small>/3 deze week</small></div>
-        <div style="height:14px"></div>
-        <button class="btn-primary" id="logFitnessBtn">Ik heb vandaag getraind</button>
-        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch. Streak = aantal weken op rij dat je 3x hebt gehaald.</p>
+      <div class="segmented" id="moveSegment">
+        <button data-sub="lopen" class="active">🏃 Lopen</button>
+        <button data-sub="fitness">🏋️ Fitness</button>
+        <button data-sub="pushups">💪 Push-ups</button>
       </div>
-    </section>
 
-    <!-- PUSHUPS TAB -->
-    <section id="tab-pushups" class="hidden">
-      <div class="card">
-        <h2>Push-ups</h2>
-        <p class="sub">Doel: 100 per dag. Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is, camera telt automatisch mee.</p>
-        <div class="streak" id="pushStreak">🔥 0 dagen streak</div>
-
-        <div class="pushup-wrap">
-          <video id="video" playsinline muted></video>
-          <canvas id="overlay"></canvas>
-          <div class="hud">
-            <div class="count" id="liveCount">0</div>
-            <div class="status" id="camStatus">camera uit</div>
-          </div>
+      <div id="sub-lopen">
+        <div class="card">
+          <h2>Hardlopen</h2>
+          <p class="sub">Doel: 3x per week. Vink af zodra je geweest bent.</p>
+          <div class="streak" id="runStreak">🔥 0 weken streak</div>
+          <div class="weekrow" id="weekRow"></div>
+          <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
+          <div style="height:14px"></div>
+          <button class="btn-primary" id="logRunBtn">Ik heb vandaag gelopen</button>
+          <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch.</p>
         </div>
+      </div>
 
-        <button class="btn-primary" id="camBtn">Start camera & tel mee</button>
-        <div style="height:10px"></div>
-        <button class="btn-ghost" id="manualBtn">+1 handmatig toevoegen</button>
+      <div id="sub-fitness" class="hidden">
+        <div class="card">
+          <h2>Fitness</h2>
+          <p class="sub">Doel: 3x per week krachttraining. Vink af zodra je getraind hebt.</p>
+          <div class="streak" id="fitnessStreak">🔥 0 weken streak</div>
+          <div class="weekrow" id="weekRowFitness"></div>
+          <div class="bignum" id="fitnessCount">0<small>/3 deze week</small></div>
+          <div style="height:14px"></div>
+          <button class="btn-primary" id="logFitnessBtn">Ik heb vandaag getraind</button>
+          <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch.</p>
+        </div>
+      </div>
 
-        <div class="progress"><i id="pushProgress" style="width:0%"></i></div>
-        <div class="progress-label"><span id="pushToday">0</span><span>doel: 100</span></div>
-        <p class="note" id="pushNote">De teller kalibreert zichzelf op je eigen op-en-neer beweging (past zich aan je afstand tot de camera aan). Zorg dat je volledige bovenlichaam in beeld blijft voor de beste telling. Klopt het een keer niet helemaal? Gebruik gerust de handmatige knop erbij — belangrijker is dat je beweegt dan dat de telling perfect is.</p>
+      <div id="sub-pushups" class="hidden">
+        <div class="card">
+          <h2>Push-ups</h2>
+          <p class="sub">Doel: 100 per dag. Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is.</p>
+          <div class="streak" id="pushStreak">🔥 0 dagen streak</div>
+
+          <div class="pushup-wrap">
+            <video id="video" playsinline muted></video>
+            <canvas id="overlay" class="overlay"></canvas>
+            <div class="hud">
+              <div class="count" id="liveCount">0</div>
+              <div class="status" id="camStatus">camera uit</div>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="camBtn">Start camera & tel mee</button>
+          <div style="height:10px"></div>
+          <button class="btn-ghost" id="manualBtn">+1 handmatig toevoegen</button>
+
+          <div class="progress"><i id="pushProgress" style="width:0%"></i></div>
+          <div class="progress-label"><span id="pushToday">0</span><span>doel: 100</span></div>
+          <p class="note" id="pushNote">De teller kalibreert zichzelf op je eigen op-en-neer beweging. Klopt het niet helemaal? Gebruik de handmatige knop.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WATER TAB -->
+    <section id="tab-water" class="hidden">
+      <div class="card">
+        <h2>Water drinken</h2>
+        <p class="sub">Doel: 8 glazen per dag.</p>
+        <div class="streak" id="waterStreak">🔥 0 dagen streak</div>
+        <div class="bignum" id="waterCount">0<small>/8 glazen</small></div>
+        <div class="progress"><i id="waterProgress" style="width:0%"></i></div>
+        <div style="height:14px"></div>
+        <div class="btn-row">
+          <button class="btn-ghost" id="waterMinus">− glas</button>
+          <button class="btn-primary" id="waterPlus">+ glas</button>
+        </div>
+        <p class="note">Reset elke dag om middernacht.</p>
+      </div>
+    </section>
+
+    <!-- GEWICHT TAB -->
+    <section id="tab-gewicht" class="hidden">
+      <div class="card">
+        <h2>Gewicht</h2>
+        <p class="sub">Vul in of update je gewicht van vandaag.</p>
+        <input type="number" id="weightInput" placeholder="Bijv. 78.5" step="0.1" inputmode="decimal">
+        <button class="btn-primary" id="weightSave">Opslaan</button>
+        <div id="weightChart" style="margin-top:16px;"></div>
+        <div class="weight-list" id="weightList"></div>
+      </div>
+    </section>
+
+    <!-- FOTO'S TAB -->
+    <section id="tab-fotos" class="hidden">
+      <div class="card">
+        <h2>Foto's</h2>
+        <p class="sub">Leg je voortgang vast, per datum bewaard — blijft lokaal op je toestel.</p>
+        <button class="btn-primary" id="addPhotoBtn">+ Foto toevoegen</button>
+        <input type="file" id="photoInput" accept="image/*" class="hidden">
+        <div id="photoGallery" style="margin-top:18px;"></div>
       </div>
     </section>
 
@@ -199,78 +300,61 @@
     <section id="tab-overzicht" class="hidden">
       <div class="card">
         <h2>Al-time totalen</h2>
-        <p class="sub">Alles wat je tot nu toe hebt gedaan sinds je bent begonnen.</p>
         <div class="statgrid" id="statGrid"></div>
       </div>
       <div class="card">
         <h2>Records</h2>
-        <p class="sub">Je beste reeksen ooit — een streak die je nu niet vasthoudt telt hier nog steeds mee.</p>
         <div class="statgrid" id="bestGrid"></div>
+      </div>
+      <div class="card">
+        <h2>Maandoverzicht</h2>
+        <div class="monthnav">
+          <button id="monthPrev" class="btn-small">‹ vorige</button>
+          <span class="monthlabel" id="monthLabel">—</span>
+          <button id="monthNext" class="btn-small">volgende ›</button>
+        </div>
+        <div id="monthChart"></div>
+        <div class="chart-legend">
+          <span><i style="background:var(--lane)"></i> 100+ push-ups</span>
+          <span><i style="background:var(--sage)"></i> minder</span>
+          <span><i style="background:var(--signal)"></i> gelopen</span>
+          <span><i style="background:var(--chalk)"></i> fitness</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Badges</h2>
+        <p class="sub">Verdien ze door consistent te blijven.</p>
+        <div class="badgegrid" id="badgeGrid"></div>
       </div>
     </section>
   </main>
 
   <nav>
-    <button class="tab active" data-tab="lopen">🏃 Lopen</button>
-    <button class="tab" data-tab="fitness">🏋️ Fitness</button>
-    <button class="tab" data-tab="pushups">💪 Push-ups</button>
-    <button class="tab" data-tab="overzicht">📊 Totaal</button>
+    <button class="tab active" data-tab="bewegen">🏃 Bewegen</button>
+    <button class="tab" data-tab="water">💧 Water</button>
+    <button class="tab" data-tab="gewicht">⚖️ Gewicht</button>
+    <button class="tab" data-tab="fotos">📷 Foto's</button>
+    <button class="tab" data-tab="overzicht">📊 Overzicht</button>
   </nav>
 </div>
 
-<!-- Pose detection: TensorFlow.js + MoveNet, geladen via CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.20.0/dist/tf-core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.20.0/dist/tf-converter.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.20.0/dist/tf-backend-webgl.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
 
 <script>
-/* ---------- Helpers voor opslag ---------- */
+/* ============ Helpers ============ */
 const todayISO = () => new Date().toISOString().slice(0,10);
 const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
-
-/* ---------- Profiel (blijft lokaal op dit toestel, geen account/server) ---------- */
-function initProfile(){
-  const name = load('profileName', null);
-  if(!name){
-    document.getElementById('onboarding').classList.remove('hidden');
-  } else {
-    updateGreeting(name);
-  }
+function seededIndex(str, mod){
+  let hash=0;
+  for(let i=0;i<str.length;i++){ hash = (hash*31 + str.charCodeAt(i)) % 100000; }
+  return hash % mod;
 }
-function updateGreeting(name){
-  let start = load('startDate', null);
-  if(!start){ start = todayISO(); save('startDate', start); }
-  const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
-  document.getElementById('streakDay').textContent = days;
-  document.getElementById('eyebrowText').innerHTML = name
-    ? `Hey ${name} · dag ${days}`
-    : `Dag ${days} · blijf bewegen`;
-}
-document.getElementById('nameSubmit').addEventListener('click', ()=>{
-  const val = document.getElementById('nameInput').value.trim();
-  save('profileName', val || 'jij');
-  document.getElementById('onboarding').classList.add('hidden');
-  updateGreeting(val || null);
-});
-document.getElementById('nameInput').addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter') document.getElementById('nameSubmit').click();
-});
-initProfile();
 
-/* ---------- Tab navigatie ---------- */
-const TABS = ['lopen','fitness','pushups','overzicht'];
-document.querySelectorAll('nav .tab').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    TABS.forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden', btn.dataset.tab!==t));
-    if(btn.dataset.tab === 'overzicht') renderOverzicht();
-  });
-});
-
-/* ---------- Motiverende feedback: toast + confetti + app-icoon badge ---------- */
+/* ============ Motiverende feedback ============ */
 function showToast(msg){
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -295,27 +379,116 @@ function celebrate(msg){ showToast(msg); confettiBurst(); }
 function alreadyCelebrated(key){ return !!load('celebrated', {})[key]; }
 function markCelebrated(key){ const done = load('celebrated', {}); done[key] = true; save('celebrated', done); }
 
-// zet een cijfer op het app-icoon (zoals ongelezen-mail bolletje) met het aantal
-// nog-openstaande dingen voor vandaag. Werkt op iOS 16.4+ zodra de app op het
-// beginscherm staat. Geen ondersteuning? Dan gebeurt er stilletjes niks (geen crash).
-function updateBadge(){
+function updateBadgeCount(){
   if(!('setAppBadge' in navigator)) return;
   const runs = load('runs', []);
   const fitness = load('fitness', []);
   const pushups = load('pushups', {});
+  const water = load('water', {});
   let outstanding = 0;
   if(!runs.includes(todayISO())) outstanding++;
   if(!fitness.includes(todayISO())) outstanding++;
   if((pushups[todayISO()]||0) < 100) outstanding++;
-  try{
-    if(outstanding>0) navigator.setAppBadge(outstanding); else navigator.clearAppBadge();
-  }catch(e){}
+  if((water[todayISO()]||0) < 8) outstanding++;
+  try{ outstanding>0 ? navigator.setAppBadge(outstanding) : navigator.clearAppBadge(); }catch(e){}
 }
 
-/* ---------- Hardlopen & Fitness (zelfde patroon: 3x per week) ---------- */
+/* ============ Profiel ============ */
+function initProfile(){
+  const name = load('profileName', null);
+  if(!name){ document.getElementById('onboarding').classList.remove('hidden'); }
+  else { updateGreeting(name); }
+}
+function updateGreeting(name){
+  let start = load('startDate', null);
+  if(!start){ start = todayISO(); save('startDate', start); }
+  const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
+  document.getElementById('streakDay').textContent = days;
+  document.getElementById('eyebrowText').innerHTML = name ? `Hey ${name} · dag ${days}` : `Dag ${days} · blijf bewegen`;
+}
+document.getElementById('nameSubmit').addEventListener('click', ()=>{
+  const val = document.getElementById('nameInput').value.trim();
+  save('profileName', val || 'jij');
+  document.getElementById('onboarding').classList.add('hidden');
+  updateGreeting(val || null);
+});
+document.getElementById('nameInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('nameSubmit').click(); });
+initProfile();
+
+/* ============ Dagelijkse quote ============ */
+const QUOTES = [
+  "Motivatie brengt je op gang, gewoonte houdt je gaande.",
+  "De beste tijd om te beginnen was gisteren. De op één na beste tijd is nu.",
+  "Elke rep telt, ook de moeilijke.",
+  "Consistentie verslaat intensiteit op de lange termijn.",
+  "Je hoeft niet perfect te zijn, je moet gewoon verschijnen.",
+  "Kleine stappen elke dag worden grote resultaten.",
+  "Je lichaam kan bijna alles. Het is je hoofd dat je moet overtuigen.",
+  "Rust als je moe bent, stop niet als je klaar bent.",
+  "Discipline is jezelf herinneren wat je wilt.",
+  "Vooruitgang, geen perfectie."
+];
+document.getElementById('quoteText').textContent = QUOTES[seededIndex(todayISO()+'-q', QUOTES.length)];
+
+/* ============ Uitdaging van de dag ============ */
+const CHALLENGE_POOL = [
+  "Doe 20 extra push-ups bovenop je doel.",
+  "Ga 10 minuten extra wandelen na het sporten.",
+  "Drink vandaag 2 glazen water meer dan je doel.",
+  "Doe een korte stretch-sessie van 5 minuten voor het slapen.",
+  "Neem vandaag altijd de trap in plaats van de lift.",
+  "Doe je training vandaag 15 minuten eerder dan normaal.",
+  "Zet je telefoon 30 min weg na het sporten en rust echt uit.",
+  "Doe 3 sets van 15 squats verspreid over de dag."
+];
+function todaysChallenge(){ return CHALLENGE_POOL[seededIndex(todayISO()+'-c', CHALLENGE_POOL.length)]; }
+function renderChallenge(){
+  document.getElementById('challengeText').textContent = todaysChallenge();
+  const done = load('challenges', {});
+  const btn = document.getElementById('challengeBtn');
+  if(done[todayISO()]){ btn.textContent = 'Voltooid vandaag ✓'; btn.disabled = true; }
+  else { btn.textContent = 'Voltooid ✓'; btn.disabled = false; }
+}
+document.getElementById('challengeBtn').addEventListener('click', ()=>{
+  const done = load('challenges', {});
+  done[todayISO()] = true;
+  save('challenges', done);
+  renderChallenge();
+  celebrate('🎯 Uitdaging voltooid!');
+  checkBadges();
+});
+renderChallenge();
+
+/* ============ Hoofdnavigatie (5 tabs) ============ */
+const TABS = ['bewegen','water','gewicht','fotos','overzicht'];
+document.querySelectorAll('nav .tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    TABS.forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden', btn.dataset.tab!==t));
+    if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); checkBadges(); }
+    if(btn.dataset.tab === 'fotos'){ renderPhotoGallery(); }
+    if(btn.dataset.tab === 'water'){ renderWater(); }
+    if(btn.dataset.tab === 'gewicht'){ renderWeight(); }
+  });
+});
+
+/* segmented control binnen Bewegen-tab */
+document.querySelectorAll('#moveSegment button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#moveSegment button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['lopen','fitness','pushups'].forEach(s=>{
+      document.getElementById('sub-'+s).classList.toggle('hidden', btn.dataset.sub!==s);
+    });
+    if(btn.dataset.sub !== 'pushups') stopCamera();
+  });
+});
+
+/* ============ Hardlopen & Fitness (3x per week) ============ */
 function mondayOfWeek(d){
   const date = new Date(d);
-  const day = (date.getDay() + 6) % 7; // maandag = 0
+  const day = (date.getDay() + 6) % 7;
   date.setDate(date.getDate() - day);
   return date.toISOString().slice(0,10);
 }
@@ -324,26 +497,30 @@ function addWeeks(isoWeekStart, n){
   d.setDate(d.getDate() + n*7);
   return d.toISOString().slice(0,10);
 }
-// telt opeenvolgende weken (terugkijkend) die het weekdoel halen.
-// de huidige week telt alleen mee als die al het doel gehaald heeft;
-// anders wordt gekeken vanaf de vorige (afgeronde) week.
 function computeWeeklyStreak(dates, goal){
   const weekCounts = {};
-  dates.forEach(d => {
-    const ws = mondayOfWeek(d);
-    weekCounts[ws] = (weekCounts[ws]||0) + 1;
-  });
+  dates.forEach(d => { const ws = mondayOfWeek(d); weekCounts[ws] = (weekCounts[ws]||0) + 1; });
   const currentWeekStart = mondayOfWeek(todayISO());
   let cursor = (weekCounts[currentWeekStart]||0) >= goal ? currentWeekStart : addWeeks(currentWeekStart, -1);
   let streak = 0;
-  while((weekCounts[cursor]||0) >= goal){
-    streak++;
-    cursor = addWeeks(cursor, -1);
-  }
+  while((weekCounts[cursor]||0) >= goal){ streak++; cursor = addWeeks(cursor, -1); }
   return streak;
 }
+function computeBestWeeklyStreak(dates, goal){
+  const weekCounts = {};
+  dates.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
+  const weeks = Object.keys(weekCounts).sort();
+  if(weeks.length===0) return 0;
+  let best=0, cur=0, cursor=weeks[0];
+  const end = mondayOfWeek(todayISO());
+  while(cursor <= end){
+    if((weekCounts[cursor]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
+    cursor = addWeeks(cursor, 1);
+  }
+  return best;
+}
 function renderWeeklyTracker(key, goal, ids){
-  const dates = load(key, []); // array van ISO datums
+  const dates = load(key, []);
   const weekStart = mondayOfWeek(todayISO());
   const weekDays = [...Array(7)].map((_,i)=>{
     const d = new Date(weekStart); d.setDate(d.getDate()+i);
@@ -359,26 +536,17 @@ function renderWeeklyTracker(key, goal, ids){
     </div>`).join('');
   document.getElementById(ids.count).innerHTML = `${doneThisWeek.length}<small>/${goal} deze week</small>`;
   const btn = document.getElementById(ids.btn);
-  if(dates.includes(todayISO())){
-    btn.textContent = ids.doneLabel;
-    btn.disabled = true;
-  } else {
-    btn.textContent = ids.actionLabel;
-    btn.disabled = false;
-  }
+  if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
+  else { btn.textContent = ids.actionLabel; btn.disabled = false; }
   const streak = computeWeeklyStreak(dates, goal);
   const streakEl = document.getElementById(ids.streak);
   streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
   streakEl.classList.toggle('zero', streak===0);
-
   if(doneThisWeek.length >= goal){
     const ck = `week:${key}:${weekStart}`;
-    if(!alreadyCelebrated(ck)){
-      markCelebrated(ck);
-      celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`);
-    }
+    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`); }
   }
-  updateBadge();
+  updateBadgeCount();
 }
 function logToday(key, goal, ids){
   const dates = load(key, []);
@@ -386,73 +554,29 @@ function logToday(key, goal, ids){
     dates.push(todayISO());
     save(key, dates);
     renderWeeklyTracker(key, goal, ids);
+    checkBadges();
   }
 }
-
-const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak',
-  doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen' };
-const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak',
-  doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind' };
-
+const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen' };
+const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind' };
 document.getElementById('logRunBtn').addEventListener('click', ()=>logToday('runs', 3, runIds));
 document.getElementById('logFitnessBtn').addEventListener('click', ()=>logToday('fitness', 3, fitnessIds));
 renderWeeklyTracker('runs', 3, runIds);
 renderWeeklyTracker('fitness', 3, fitnessIds);
 
-/* ---------- Push-ups: handmatig + camera ---------- */
+/* ============ Push-ups ============ */
 const PUSHUP_GOAL = 100;
-// telt opeenvolgende dagen (terugkijkend) die het dagdoel halen.
-// vandaag telt alleen mee als het doel al gehaald is; anders wordt vanaf gisteren gekeken.
 function computeDailyStreak(countsObj, goal){
   const oneDay = 86400000;
   let cursor = new Date(todayISO());
-  if((countsObj[todayISO()]||0) < goal){
-    cursor = new Date(cursor.getTime() - oneDay);
-  }
+  if((countsObj[todayISO()]||0) < goal) cursor = new Date(cursor.getTime() - oneDay);
   let streak = 0;
   while(true){
     const key = cursor.toISOString().slice(0,10);
-    if((countsObj[key]||0) >= goal){
-      streak++;
-      cursor = new Date(cursor.getTime() - oneDay);
-    } else break;
+    if((countsObj[key]||0) >= goal){ streak++; cursor = new Date(cursor.getTime() - oneDay); }
+    else break;
   }
   return streak;
-}
-function renderPushups(){
-  const all = load('pushups', {});
-  const count = all[todayISO()] || 0;
-  document.getElementById('pushToday').textContent = count;
-  document.getElementById('liveCount').textContent = count;
-  document.getElementById('pushProgress').style.width = Math.min(100, (count/PUSHUP_GOAL)*100) + '%';
-  const streak = computeDailyStreak(all, PUSHUP_GOAL);
-  const streakEl = document.getElementById('pushStreak');
-  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
-  streakEl.classList.toggle('zero', streak===0);
-
-  if(count >= PUSHUP_GOAL){
-    const ck = `push:${todayISO()}`;
-    if(!alreadyCelebrated(ck)){
-      markCelebrated(ck);
-      celebrate('🏆 100 push-ups gehaald vandaag!');
-    }
-  }
-  updateBadge();
-}
-
-/* ---------- Overzicht: al-time totalen & records ---------- */
-function computeBestWeeklyStreak(dates, goal){
-  const weekCounts = {};
-  dates.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
-  const weeks = Object.keys(weekCounts).sort();
-  if(weeks.length===0) return 0;
-  let best=0, cur=0, cursor=weeks[0];
-  const end = mondayOfWeek(todayISO());
-  while(cursor <= end){
-    if((weekCounts[cursor]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
-    cursor = addWeeks(cursor, 1);
-  }
-  return best;
 }
 function computeBestDailyStreak(countsObj, goal){
   const days = Object.keys(countsObj).sort();
@@ -466,36 +590,33 @@ function computeBestDailyStreak(countsObj, goal){
   }
   return best;
 }
-function renderOverzicht(){
-  const runs = load('runs', []);
-  const fitness = load('fitness', []);
-  const pushups = load('pushups', {});
-  const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
-  const daysGoalHit = Object.values(pushups).filter(v=>v>=PUSHUP_GOAL).length;
-
-  document.getElementById('statGrid').innerHTML = `
-    <div class="stat"><div class="num">${runs.length}</div><div class="lbl">keer gelopen</div></div>
-    <div class="stat"><div class="num">${fitness.length}</div><div class="lbl">keer getraind</div></div>
-    <div class="stat"><div class="num">${totalPushups}</div><div class="lbl">push-ups totaal</div></div>
-    <div class="stat"><div class="num">${daysGoalHit}</div><div class="lbl">dagen 100 gehaald</div></div>`;
-
-  document.getElementById('bestGrid').innerHTML = `
-    <div class="stat"><div class="num">${computeBestWeeklyStreak(runs,3)}</div><div class="lbl">beste loop-streak (wkn)</div></div>
-    <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness,3)}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
-    <div class="stat"><div class="num">${computeBestDailyStreak(pushups,PUSHUP_GOAL)}</div><div class="lbl">beste push-up streak (dgn)</div></div>`;
+function renderPushups(){
+  const all = load('pushups', {});
+  const count = all[todayISO()] || 0;
+  document.getElementById('pushToday').textContent = count;
+  document.getElementById('liveCount').textContent = count;
+  document.getElementById('pushProgress').style.width = Math.min(100, (count/PUSHUP_GOAL)*100) + '%';
+  const streak = computeDailyStreak(all, PUSHUP_GOAL);
+  const streakEl = document.getElementById('pushStreak');
+  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+  streakEl.classList.toggle('zero', streak===0);
+  if(count >= PUSHUP_GOAL){
+    const ck = `push:${todayISO()}`;
+    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('🏆 100 push-ups gehaald vandaag!'); }
+  }
+  updateBadgeCount();
 }
 function addPushup(n=1){
   const all = load('pushups', {});
   all[todayISO()] = (all[todayISO()] || 0) + n;
   save('pushups', all);
   renderPushups();
+  checkBadges();
 }
 document.getElementById('manualBtn').addEventListener('click', ()=>addPushup(1));
 renderPushups();
 
-/* Camera + pose detection */
-let detector = null, running = false, stream = null;
-let poseState = 'up', lastRepTime = 0;
+let detector = null, running = false, stream = null, poseState = 'up', lastRepTime = 0;
 const video = document.getElementById('video');
 const canvas = document.getElementById('overlay');
 const ctx = canvas.getContext('2d');
@@ -509,7 +630,6 @@ async function initDetector(){
     modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING
   });
 }
-
 async function startCamera(){
   statusEl.textContent = 'model laden…';
   camBtn.disabled = true;
@@ -528,8 +648,7 @@ async function startCamera(){
   }catch(e){
     statusEl.textContent = 'camera geweigerd';
     camBtn.disabled = false;
-    document.getElementById('pushNote').textContent =
-      'Kon geen camera-toegang krijgen. Check of je Safari toestemming hebt gegeven (Instellingen > Safari > Camera), of gebruik de handmatige knop.';
+    document.getElementById('pushNote').textContent = 'Kon geen camera-toegang krijgen. Check Instellingen > Safari > Camera, of gebruik de handmatige knop.';
   }
 }
 function stopCamera(){
@@ -541,68 +660,36 @@ function stopCamera(){
 }
 camBtn.addEventListener('click', ()=>{ running ? stopCamera() : startCamera(); });
 
-// bijhouden van de verticale positie van schouders om op/neer-cycli te detecteren.
-// ADAPTIEF: i.p.v. vaste drempelwaarden (die faalden zodra je verder/dichterbij
-// de camera stond) kalibreert dit zich continu op het bewegingsbereik van de
-// laatste paar seconden. Dat voorkomt gemiste reps zoals eerder (12 gedaan, 7 geteld).
-let smoothBuf = [];        // korte smoothing om cameraruis te dempen
-let motionBuf = [];        // {t, y} rollend venster voor min/max kalibratie
-const MOTION_WINDOW_MS = 4000;
-const MIN_RANGE = 0.035;   // minimale bewegingsuitslag (fractie van beeldhoogte) om als 'echte' rep te tellen
-const REP_DEBOUNCE_MS = 300;
-
+let smoothBuf = [], motionBuf = [];
+const MOTION_WINDOW_MS = 4000, MIN_RANGE = 0.035, REP_DEBOUNCE_MS = 300;
 async function detectLoop(){
   if(!running) return;
   const poses = await detector.estimatePoses(video, { flipHorizontal:false });
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   if(poses[0]){
     const kp = poses[0].keypoints;
     const byName = {}; kp.forEach(k=>byName[k.name]=k);
     const ls = byName['left_shoulder'], rs = byName['right_shoulder'];
-
-    // teken simpel skelet voor visuele feedback
     ctx.fillStyle = '#e8c547';
-    kp.forEach(k=>{
-      if(k.score > 0.4){
-        ctx.beginPath();
-        ctx.arc(k.x, k.y, 5, 0, 7);
-        ctx.fill();
-      }
-    });
-
+    kp.forEach(k=>{ if(k.score > 0.4){ ctx.beginPath(); ctx.arc(k.x, k.y, 5, 0, 7); ctx.fill(); } });
     if(ls && rs && ls.score>0.4 && rs.score>0.4){
       const now = Date.now();
       const shoulderY = (ls.y + rs.y)/2;
-      const normY = shoulderY / video.videoHeight; // 0 (boven) .. 1 (onder)
-
-      // lichte smoothing (3 frames) tegen jitter, zonder de piek plat te drukken
+      const normY = shoulderY / video.videoHeight;
       smoothBuf.push(normY);
       if(smoothBuf.length > 3) smoothBuf.shift();
       const y = smoothBuf.reduce((a,b)=>a+b,0)/smoothBuf.length;
-
       motionBuf.push({t:now, y});
       while(motionBuf.length && now - motionBuf[0].t > MOTION_WINDOW_MS) motionBuf.shift();
-
       if(motionBuf.length > 5){
         const ys = motionBuf.map(p=>p.y);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const range = maxY - minY;
-
+        const minY = Math.min(...ys), maxY = Math.max(...ys), range = maxY - minY;
         if(range > MIN_RANGE){
-          // drempels relatief aan het geobserveerde bereik, i.p.v. vaste getallen
-          const downThresh = minY + range*0.65;
-          const upThresh   = minY + range*0.30;
-
-          if(poseState === 'up' && y > downThresh){
-            poseState = 'down';
-          } else if(poseState === 'down' && y < upThresh){
+          const downThresh = minY + range*0.65, upThresh = minY + range*0.30;
+          if(poseState === 'up' && y > downThresh){ poseState = 'down'; }
+          else if(poseState === 'down' && y < upThresh){
             poseState = 'up';
-            if(now - lastRepTime > REP_DEBOUNCE_MS){
-              lastRepTime = now;
-              addPushup(1);
-            }
+            if(now - lastRepTime > REP_DEBOUNCE_MS){ lastRepTime = now; addPushup(1); }
           }
         }
       }
@@ -610,6 +697,298 @@ async function detectLoop(){
   }
   if(running) requestAnimationFrame(detectLoop);
 }
+
+/* ============ Water ============ */
+const WATER_GOAL = 8;
+function renderWater(){
+  const all = load('water', {});
+  const count = all[todayISO()] || 0;
+  document.getElementById('waterCount').innerHTML = `${count}<small>/${WATER_GOAL} glazen</small>`;
+  document.getElementById('waterProgress').style.width = Math.min(100, (count/WATER_GOAL)*100) + '%';
+  const streak = computeDailyStreak(all, WATER_GOAL);
+  const streakEl = document.getElementById('waterStreak');
+  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+  streakEl.classList.toggle('zero', streak===0);
+  if(count >= WATER_GOAL){
+    const ck = `water:${todayISO()}`;
+    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('💧 Waterdoel gehaald!'); }
+  }
+  updateBadgeCount();
+}
+function addWater(delta){
+  const all = load('water', {});
+  let v = (all[todayISO()]||0) + delta;
+  if(v < 0) v = 0;
+  all[todayISO()] = v;
+  save('water', all);
+  renderWater();
+  checkBadges();
+}
+document.getElementById('waterPlus').addEventListener('click', ()=>addWater(1));
+document.getElementById('waterMinus').addEventListener('click', ()=>addWater(-1));
+
+/* ============ Gewicht ============ */
+function renderWeight(){
+  const all = load('weight', {});
+  const todayVal = all[todayISO()];
+  document.getElementById('weightInput').value = todayVal || '';
+  const entries = Object.entries(all).sort((a,b)=>a[0]<b[0]?-1:1);
+  const last12 = entries.slice(-12);
+  if(last12.length >= 2){
+    const vals = last12.map(e=>e[1]);
+    const min = Math.min(...vals), max = Math.max(...vals);
+    const range = (max-min) || 1;
+    const w = 320, h = 90, pad = 8;
+    const stepX = (w-pad*2)/(last12.length-1);
+    const pts = last12.map((e,i)=>{
+      const x = pad + i*stepX;
+      const y = pad + (1-(e[1]-min)/range)*(h-pad*2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    document.getElementById('weightChart').innerHTML = `
+      <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:100px;">
+        <polyline points="${pts}" fill="none" stroke="#e8c547" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>`;
+  } else {
+    document.getElementById('weightChart').innerHTML = `<p class="note">Log minstens 2 metingen om een grafiek te zien.</p>`;
+  }
+  const listEntries = entries.slice().reverse().slice(0,10);
+  document.getElementById('weightList').innerHTML = listEntries.map(([d,v])=>{
+    const label = new Date(d).toLocaleDateString('nl-NL', {day:'numeric', month:'short'});
+    return `<div class="weight-row"><span class="d">${label}</span><span class="v">${v} kg</span></div>`;
+  }).join('') || '<p class="note">Nog geen metingen gelogd.</p>';
+}
+document.getElementById('weightSave').addEventListener('click', ()=>{
+  const val = parseFloat(document.getElementById('weightInput').value);
+  if(isNaN(val) || val<=0){ showToast('Vul een geldig gewicht in'); return; }
+  const all = load('weight', {});
+  const isFirst = Object.keys(all).length === 0;
+  all[todayISO()] = val;
+  save('weight', all);
+  renderWeight();
+  showToast(isFirst ? '⚖️ Eerste gewicht gelogd!' : '⚖️ Gewicht bijgewerkt');
+  checkBadges();
+});
+
+/* ============ Foto's (IndexedDB, per datum) ============ */
+const DB_NAME='mAppDB', DB_VERSION=1, PHOTO_STORE='photos';
+function openPhotoDB(){
+  return new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e)=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(PHOTO_STORE)){
+        const store = db.createObjectStore(PHOTO_STORE, {keyPath:'id', autoIncrement:true});
+        store.createIndex('date','date',{unique:false});
+      }
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function savePhoto(dataUrl, date){
+  const db = await openPhotoDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(PHOTO_STORE,'readwrite');
+    tx.objectStore(PHOTO_STORE).add({date, dataUrl, ts:Date.now()});
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function getAllPhotos(){
+  try{
+    const db = await openPhotoDB();
+    return new Promise((resolve,reject)=>{
+      const tx = db.transaction(PHOTO_STORE,'readonly');
+      const req = tx.objectStore(PHOTO_STORE).getAll();
+      req.onsuccess = ()=>resolve(req.result || []);
+      req.onerror = ()=>reject(req.error);
+    });
+  }catch(e){ return []; }
+}
+async function deletePhoto(id){
+  const db = await openPhotoDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(PHOTO_STORE,'readwrite');
+    tx.objectStore(PHOTO_STORE).delete(id);
+    tx.oncomplete = ()=>resolve();
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+document.getElementById('addPhotoBtn').addEventListener('click', ()=>document.getElementById('photoInput').click());
+document.getElementById('photoInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = async ()=>{
+      const maxDim = 1000;
+      let w = img.width, h = img.height;
+      if(w > maxDim || h > maxDim){
+        if(w > h){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else { w = Math.round(w*maxDim/h); h = maxDim; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.82);
+      const existing = await getAllPhotos();
+      await savePhoto(dataUrl, todayISO());
+      renderPhotoGallery();
+      if(existing.length === 0) celebrate('📷 Eerste foto toegevoegd!'); else showToast('📷 Foto toegevoegd');
+      checkBadges();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+async function renderPhotoGallery(){
+  const photos = await getAllPhotos();
+  const container = document.getElementById('photoGallery');
+  if(photos.length === 0){ container.innerHTML = '<p class="note">Nog geen foto\'s toegevoegd.</p>'; return; }
+  const byDate = {};
+  photos.forEach(p=>{ (byDate[p.date] = byDate[p.date]||[]).push(p); });
+  const dates = Object.keys(byDate).sort().reverse();
+  container.innerHTML = dates.map(d=>{
+    const label = new Date(d).toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long'});
+    const thumbs = byDate[d].map(p=>`<div class="photo-thumb" data-id="${p.id}"><img src="${p.dataUrl}"></div>`).join('');
+    return `<div class="photo-daylabel">${label}</div><div class="photo-grid">${thumbs}</div>`;
+  }).join('');
+  container.querySelectorAll('.photo-thumb').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = Number(el.dataset.id);
+      const p = photos.find(ph=>ph.id===id);
+      openLightbox(p);
+    });
+  });
+}
+function openLightbox(photo){
+  const lb = document.getElementById('lightbox');
+  const label = new Date(photo.date).toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long'});
+  lb.innerHTML = `
+    <img src="${photo.dataUrl}">
+    <div class="lb-date">${label}</div>
+    <div class="lb-actions">
+      <button class="btn-ghost" id="lbClose">Sluiten</button>
+      <button class="btn-primary" id="lbDelete">Verwijderen</button>
+    </div>`;
+  lb.classList.remove('hidden');
+  document.getElementById('lbClose').addEventListener('click', ()=>lb.classList.add('hidden'));
+  document.getElementById('lbDelete').addEventListener('click', async ()=>{
+    await deletePhoto(photo.id);
+    lb.classList.add('hidden');
+    renderPhotoGallery();
+  });
+}
+
+/* ============ Overzicht: totalen, records, maandgrafiek, badges ============ */
+function renderOverzicht(){
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+  const pushups = load('pushups', {});
+  const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
+  const daysGoalHit = Object.values(pushups).filter(v=>v>=PUSHUP_GOAL).length;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat"><div class="num">${runs.length}</div><div class="lbl">keer gelopen</div></div>
+    <div class="stat"><div class="num">${fitness.length}</div><div class="lbl">keer getraind</div></div>
+    <div class="stat"><div class="num">${totalPushups}</div><div class="lbl">push-ups totaal</div></div>
+    <div class="stat"><div class="num">${daysGoalHit}</div><div class="lbl">dagen 100 gehaald</div></div>`;
+
+  document.getElementById('bestGrid').innerHTML = `
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(runs,3)}</div><div class="lbl">beste loop-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness,3)}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestDailyStreak(pushups,PUSHUP_GOAL)}</div><div class="lbl">beste push-up streak (dgn)</div></div>`;
+}
+
+let monthOffset = 0;
+function renderMonthChart(){
+  const base = new Date(); base.setDate(1); base.setMonth(base.getMonth()+monthOffset);
+  const year = base.getFullYear(), month = base.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  document.getElementById('monthLabel').textContent = base.toLocaleDateString('nl-NL', {month:'long', year:'numeric'});
+  document.getElementById('monthNext').disabled = (monthOffset >= 0);
+
+  const pushups = load('pushups', {});
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+
+  const barSlot=16, barW=9, chartH=90;
+  let maxVal = 100;
+  for(let i=0;i<daysInMonth;i++){
+    const key = `${year}-${String(month+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
+    maxVal = Math.max(maxVal, pushups[key]||0);
+  }
+  let bars='', dots='';
+  for(let i=0;i<daysInMonth;i++){
+    const dayNum = i+1;
+    const key = `${year}-${String(month+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const val = pushups[key]||0;
+    const h = Math.max(Math.round((val/maxVal)*chartH), val>0?2:0);
+    const x = i*barSlot+4, y = chartH-h;
+    const color = val>=100 ? '#e8c547' : (val>0 ? '#5b7a6b' : 'rgba(243,239,230,0.08)');
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="2" fill="${color}"/>`;
+    const ry = chartH+10;
+    if(runs.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry}" r="2.6" fill="#ff5a2b"/>`;
+    if(fitness.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry+7}" r="2.6" fill="#f3efe6"/>`;
+  }
+  const totalWidth = daysInMonth*barSlot+8;
+  document.getElementById('monthChart').innerHTML = `
+    <svg viewBox="0 0 ${totalWidth} ${chartH+22}" style="width:100%; height:150px;">${bars}${dots}</svg>`;
+}
+document.getElementById('monthPrev').addEventListener('click', ()=>{ monthOffset--; renderMonthChart(); });
+document.getElementById('monthNext').addEventListener('click', ()=>{ if(monthOffset<0){ monthOffset++; renderMonthChart(); } });
+
+async function checkBadges(){
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+  const pushups = load('pushups', {});
+  const water = load('water', {});
+  const weight = load('weight', {});
+  const challenges = load('challenges', {});
+  const photos = await getAllPhotos();
+
+  const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
+
+  const defs = [
+    {id:'first_run', emoji:'🏃', title:'Eerste stap', desc:'Log je eerste keer lopen', unlocked: runs.length>=1},
+    {id:'first_fitness', emoji:'🏋️', title:'Eerste training', desc:'Log je eerste fitness-sessie', unlocked: fitness.length>=1},
+    {id:'first_100', emoji:'💯', title:'Eerste honderd', desc:'100 push-ups op één dag', unlocked: Object.values(pushups).some(v=>v>=100)},
+    {id:'run_streak3', emoji:'🔥', title:'Op dreef', desc:'3 weken op rij gelopen', unlocked: computeBestWeeklyStreak(runs,3)>=3},
+    {id:'fitness_streak3', emoji:'⚡', title:'Consistent', desc:'3 weken op rij getraind', unlocked: computeBestWeeklyStreak(fitness,3)>=3},
+    {id:'push_streak7', emoji:'🏆', title:'IJzeren week', desc:'7 dagen op rij 100 push-ups', unlocked: computeBestDailyStreak(pushups,100)>=7},
+    {id:'push_1000', emoji:'💪', title:'Duizend', desc:'1000 push-ups totaal', unlocked: totalPushups>=1000},
+    {id:'first_photo', emoji:'📷', title:'Vastgelegd', desc:'Voeg je eerste foto toe', unlocked: photos.length>=1},
+    {id:'first_weight', emoji:'⚖️', title:'Op de weegschaal', desc:'Log je eerste gewicht', unlocked: Object.keys(weight).length>=1},
+    {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel', unlocked: computeBestDailyStreak(water,8)>=7},
+    {id:'first_challenge', emoji:'🎯', title:'Uitdager', desc:'Voltooi een dagelijkse uitdaging', unlocked: Object.keys(challenges).length>=1},
+    {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1},
+  ];
+
+  const unlockedStore = load('unlockedBadges', {});
+  let newlyUnlocked = [];
+  defs.forEach(b=>{
+    if(b.unlocked && !unlockedStore[b.id]){ unlockedStore[b.id] = todayISO(); newlyUnlocked.push(b); }
+  });
+  if(newlyUnlocked.length){
+    save('unlockedBadges', unlockedStore);
+    newlyUnlocked.forEach((b,i)=> setTimeout(()=>celebrate(`${b.emoji} Badge verdiend: ${b.title}!`), i*600));
+  }
+  const grid = document.getElementById('badgeGrid');
+  if(grid){
+    grid.innerHTML = defs.map(b=>{
+      const on = !!unlockedStore[b.id];
+      return `<div class="badge ${on?'unlocked':''}">
+        <div class="badge-emoji">${on ? b.emoji : '🔒'}</div>
+        <div class="badge-title">${b.title}</div>
+        <div class="badge-desc">${b.desc}</div>
+      </div>`;
+    }).join('');
+  }
+}
+checkBadges();
 </script>
 </body>
 </html>
