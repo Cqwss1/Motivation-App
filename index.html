@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>BEWEEG — dagelijkse targets</title>
-<link rel="apple-touch-icon" href="data:image/png;base64,">
+<title>M — dagelijkse targets</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="M.">
+<meta name="theme-color" content="#12201b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -37,6 +41,17 @@
   h1{font-family:'Oswald',sans-serif; font-weight:700; font-size:34px; letter-spacing:.01em;
     margin:0; text-transform:uppercase;}
   h1 span{color:var(--signal);}
+
+  #onboarding{position:fixed; inset:0; background:rgba(10,14,12,0.92); z-index:2000;
+    display:flex; align-items:center; justify-content:center; padding:24px;}
+  #onboarding .box{background:var(--bg-2); border:1px solid var(--line); border-radius:16px;
+    padding:26px; max-width:340px; width:100%; text-align:center;}
+  #onboarding h2{font-family:'Oswald'; text-transform:uppercase; font-size:22px; margin:0 0 8px;}
+  #onboarding p{color:var(--chalk-dim); font-size:13.5px; margin:0 0 18px; line-height:1.5;}
+  #onboarding input{width:100%; background:var(--bg); border:1.5px solid var(--line); border-radius:10px;
+    padding:13px 14px; color:var(--chalk); font-size:16px; font-family:'Work Sans'; margin-bottom:14px;}
+  #onboarding input:focus{outline:none; border-color:var(--signal);}
+  .hidden{display:none;}
 
   main{flex:1; padding:6px 20px 20px;}
   .card{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px;}
@@ -89,13 +104,40 @@
     border:1px solid rgba(232,197,71,0.35); color:var(--lane); font-family:'Oswald'; font-size:13px;
     font-weight:600; letter-spacing:.02em; padding:6px 12px; border-radius:20px; margin-bottom:14px;}
   .streak.zero{background:transparent; border-color:var(--line); color:var(--chalk-dim);}
+
+  .statgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .stat{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px;}
+  .stat .num{font-family:'Oswald'; font-size:26px; font-weight:700; color:var(--lane); line-height:1;}
+  .stat .lbl{font-size:11.5px; color:var(--chalk-dim); margin-top:5px; text-transform:uppercase; letter-spacing:.03em;}
+
+  #celebrate{position:fixed; inset:0; pointer-events:none; z-index:999; overflow:hidden;}
+  #celebrate span{position:absolute; top:-40px; font-size:22px; animation:fall 1.6s ease-in forwards;}
+  @keyframes fall{
+    0%{transform:translateY(0) rotate(0deg); opacity:1;}
+    100%{transform:translateY(110vh) rotate(340deg); opacity:0;}
+  }
+  #toast{position:fixed; left:50%; top:26px; transform:translateX(-50%) translateY(-140%);
+    background:var(--lane); color:#1a1405; font-family:'Oswald'; font-weight:600; font-size:14px;
+    padding:12px 20px; border-radius:30px; z-index:1000; transition:transform .35s ease; text-align:center;
+    box-shadow:0 6px 20px rgba(0,0,0,.35); max-width:80%;}
+  #toast.show{transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
+<div id="toast"></div>
+<div id="celebrate"></div>
+<div id="onboarding" class="hidden">
+  <div class="box">
+    <h2>Welkom.</h2>
+    <p>Hoe mag ik je noemen? Dit blijft alleen op jouw telefoon staan.</p>
+    <input type="text" id="nameInput" placeholder="Je naam" maxlength="20" autocapitalize="words">
+    <button class="btn-primary" id="nameSubmit">Start</button>
+  </div>
+</div>
 <div id="app">
   <header>
-    <p class="eyebrow">Dag <span id="streakDay">—</span> · blijf bewegen</p>
-    <h1>BEWEEG<span>.</span></h1>
+    <p class="eyebrow" id="eyebrowText">Dag <span id="streakDay">—</span> · blijf bewegen</p>
+    <h1>M<span>.</span></h1>
   </header>
 
   <main>
@@ -152,12 +194,27 @@
         <p class="note" id="pushNote">De teller kalibreert zichzelf op je eigen op-en-neer beweging (past zich aan je afstand tot de camera aan). Zorg dat je volledige bovenlichaam in beeld blijft voor de beste telling. Klopt het een keer niet helemaal? Gebruik gerust de handmatige knop erbij — belangrijker is dat je beweegt dan dat de telling perfect is.</p>
       </div>
     </section>
+
+    <!-- OVERZICHT TAB -->
+    <section id="tab-overzicht" class="hidden">
+      <div class="card">
+        <h2>Al-time totalen</h2>
+        <p class="sub">Alles wat je tot nu toe hebt gedaan sinds je bent begonnen.</p>
+        <div class="statgrid" id="statGrid"></div>
+      </div>
+      <div class="card">
+        <h2>Records</h2>
+        <p class="sub">Je beste reeksen ooit — een streak die je nu niet vasthoudt telt hier nog steeds mee.</p>
+        <div class="statgrid" id="bestGrid"></div>
+      </div>
+    </section>
   </main>
 
   <nav>
     <button class="tab active" data-tab="lopen">🏃 Lopen</button>
     <button class="tab" data-tab="fitness">🏋️ Fitness</button>
     <button class="tab" data-tab="pushups">💪 Push-ups</button>
+    <button class="tab" data-tab="overzicht">📊 Totaal</button>
   </nav>
 </div>
 
@@ -173,23 +230,87 @@ const todayISO = () => new Date().toISOString().slice(0,10);
 const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-/* dag-teller sinds eerste gebruik, puur voor motivatie */
-(function(){
+/* ---------- Profiel (blijft lokaal op dit toestel, geen account/server) ---------- */
+function initProfile(){
+  const name = load('profileName', null);
+  if(!name){
+    document.getElementById('onboarding').classList.remove('hidden');
+  } else {
+    updateGreeting(name);
+  }
+}
+function updateGreeting(name){
   let start = load('startDate', null);
   if(!start){ start = todayISO(); save('startDate', start); }
   const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
   document.getElementById('streakDay').textContent = days;
-})();
+  document.getElementById('eyebrowText').innerHTML = name
+    ? `Hey ${name} · dag ${days}`
+    : `Dag ${days} · blijf bewegen`;
+}
+document.getElementById('nameSubmit').addEventListener('click', ()=>{
+  const val = document.getElementById('nameInput').value.trim();
+  save('profileName', val || 'jij');
+  document.getElementById('onboarding').classList.add('hidden');
+  updateGreeting(val || null);
+});
+document.getElementById('nameInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('nameSubmit').click();
+});
+initProfile();
 
 /* ---------- Tab navigatie ---------- */
-const TABS = ['lopen','fitness','pushups'];
+const TABS = ['lopen','fitness','pushups','overzicht'];
 document.querySelectorAll('nav .tab').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     TABS.forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden', btn.dataset.tab!==t));
+    if(btn.dataset.tab === 'overzicht') renderOverzicht();
   });
 });
+
+/* ---------- Motiverende feedback: toast + confetti + app-icoon badge ---------- */
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+function confettiBurst(){
+  const emojis = ['🎉','🔥','💪','⭐','✅'];
+  const container = document.getElementById('celebrate');
+  for(let i=0;i<24;i++){
+    const s = document.createElement('span');
+    s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*0.4)+'s';
+    s.style.fontSize = (16+Math.random()*14)+'px';
+    container.appendChild(s);
+    setTimeout(()=>s.remove(), 2200);
+  }
+}
+function celebrate(msg){ showToast(msg); confettiBurst(); }
+function alreadyCelebrated(key){ return !!load('celebrated', {})[key]; }
+function markCelebrated(key){ const done = load('celebrated', {}); done[key] = true; save('celebrated', done); }
+
+// zet een cijfer op het app-icoon (zoals ongelezen-mail bolletje) met het aantal
+// nog-openstaande dingen voor vandaag. Werkt op iOS 16.4+ zodra de app op het
+// beginscherm staat. Geen ondersteuning? Dan gebeurt er stilletjes niks (geen crash).
+function updateBadge(){
+  if(!('setAppBadge' in navigator)) return;
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+  const pushups = load('pushups', {});
+  let outstanding = 0;
+  if(!runs.includes(todayISO())) outstanding++;
+  if(!fitness.includes(todayISO())) outstanding++;
+  if((pushups[todayISO()]||0) < 100) outstanding++;
+  try{
+    if(outstanding>0) navigator.setAppBadge(outstanding); else navigator.clearAppBadge();
+  }catch(e){}
+}
 
 /* ---------- Hardlopen & Fitness (zelfde patroon: 3x per week) ---------- */
 function mondayOfWeek(d){
@@ -249,6 +370,15 @@ function renderWeeklyTracker(key, goal, ids){
   const streakEl = document.getElementById(ids.streak);
   streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
   streakEl.classList.toggle('zero', streak===0);
+
+  if(doneThisWeek.length >= goal){
+    const ck = `week:${key}:${weekStart}`;
+    if(!alreadyCelebrated(ck)){
+      markCelebrated(ck);
+      celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`);
+    }
+  }
+  updateBadge();
 }
 function logToday(key, goal, ids){
   const dates = load(key, []);
@@ -299,6 +429,60 @@ function renderPushups(){
   const streakEl = document.getElementById('pushStreak');
   streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
   streakEl.classList.toggle('zero', streak===0);
+
+  if(count >= PUSHUP_GOAL){
+    const ck = `push:${todayISO()}`;
+    if(!alreadyCelebrated(ck)){
+      markCelebrated(ck);
+      celebrate('🏆 100 push-ups gehaald vandaag!');
+    }
+  }
+  updateBadge();
+}
+
+/* ---------- Overzicht: al-time totalen & records ---------- */
+function computeBestWeeklyStreak(dates, goal){
+  const weekCounts = {};
+  dates.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
+  const weeks = Object.keys(weekCounts).sort();
+  if(weeks.length===0) return 0;
+  let best=0, cur=0, cursor=weeks[0];
+  const end = mondayOfWeek(todayISO());
+  while(cursor <= end){
+    if((weekCounts[cursor]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
+    cursor = addWeeks(cursor, 1);
+  }
+  return best;
+}
+function computeBestDailyStreak(countsObj, goal){
+  const days = Object.keys(countsObj).sort();
+  if(days.length===0) return 0;
+  let best=0, cur=0, cursor=new Date(days[0]);
+  const end = new Date(todayISO());
+  while(cursor <= end){
+    const key = cursor.toISOString().slice(0,10);
+    if((countsObj[key]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
+    cursor = new Date(cursor.getTime()+86400000);
+  }
+  return best;
+}
+function renderOverzicht(){
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+  const pushups = load('pushups', {});
+  const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
+  const daysGoalHit = Object.values(pushups).filter(v=>v>=PUSHUP_GOAL).length;
+
+  document.getElementById('statGrid').innerHTML = `
+    <div class="stat"><div class="num">${runs.length}</div><div class="lbl">keer gelopen</div></div>
+    <div class="stat"><div class="num">${fitness.length}</div><div class="lbl">keer getraind</div></div>
+    <div class="stat"><div class="num">${totalPushups}</div><div class="lbl">push-ups totaal</div></div>
+    <div class="stat"><div class="num">${daysGoalHit}</div><div class="lbl">dagen 100 gehaald</div></div>`;
+
+  document.getElementById('bestGrid').innerHTML = `
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(runs,3)}</div><div class="lbl">beste loop-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness,3)}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestDailyStreak(pushups,PUSHUP_GOAL)}</div><div class="lbl">beste push-up streak (dgn)</div></div>`;
 }
 function addPushup(n=1){
   const all = load('pushups', {});
