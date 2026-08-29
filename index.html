@@ -183,7 +183,7 @@
 
 <div id="app">
   <header>
-    <p class="eyebrow" id="eyebrowText">Dag <span id="streakDay">—</span> · blijf bewegen</p>
+    <p class="eyebrow" id="eyebrowText">Dag — · blijf bewegen</p>
     <h1>M<span>.</span></h1>
     <p class="quote" id="quoteText"></p>
   </header>
@@ -398,14 +398,29 @@ function initProfile(){
   const name = load('profileName', null);
   if(!name){ document.getElementById('onboarding').classList.remove('hidden'); }
   else { updateGreeting(name); }
-}
-function updateGreeting(name){
+
+  function updateGreeting(name){
   let start = load('startDate', null);
-  if(!start){ start = todayISO(); save('startDate', start); }
-  const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
-  document.getElementById('streakDay').textContent = days;
-  document.getElementById('eyebrowText').innerHTML = name ? `Hey ${name} · dag ${days}` : `Dag ${days} · blijf bewegen`;
+
+  if(!start){
+    start = todayISO();
+    save('startDate', start);
+  }
+
+  const days =
+    Math.floor(
+      (new Date(todayISO()) - new Date(start)) / 86400000
+    ) + 1;
+
+  const eyebrow = document.getElementById('eyebrowText');
+
+  if(!eyebrow) return;
+
+  eyebrow.textContent = name
+    ? `Hey ${name} · dag ${days}`
+    : `Dag ${days} · blijf bewegen`;
 }
+
 document.getElementById('nameSubmit').addEventListener('click', ()=>{
   const val = document.getElementById('nameInput').value.trim();
   save('profileName', val || 'jij');
