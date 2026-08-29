@@ -84,6 +84,11 @@
   nav button.tab.active{color:var(--signal);}
   .hidden{display:none;}
   .note{font-size:12px; color:var(--sage); margin-top:10px; line-height:1.5;}
+
+  .streak{display:inline-flex; align-items:center; gap:6px; background:rgba(232,197,71,0.12);
+    border:1px solid rgba(232,197,71,0.35); color:var(--lane); font-family:'Oswald'; font-size:13px;
+    font-weight:600; letter-spacing:.02em; padding:6px 12px; border-radius:20px; margin-bottom:14px;}
+  .streak.zero{background:transparent; border-color:var(--line); color:var(--chalk-dim);}
 </style>
 </head>
 <body>
@@ -99,11 +104,26 @@
       <div class="card">
         <h2>Hardlopen</h2>
         <p class="sub">Doel: 3x per week. Vink af zodra je geweest bent.</p>
+        <div class="streak" id="runStreak">🔥 0 weken streak</div>
         <div class="weekrow" id="weekRow"></div>
         <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
         <div style="height:14px"></div>
         <button class="btn-primary" id="logRunBtn">Ik heb vandaag gelopen</button>
-        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch.</p>
+        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch. Streak = aantal weken op rij dat je 3x hebt gehaald.</p>
+      </div>
+    </section>
+
+    <!-- FITNESS TAB -->
+    <section id="tab-fitness" class="hidden">
+      <div class="card">
+        <h2>Fitness</h2>
+        <p class="sub">Doel: 3x per week krachttraining. Vink af zodra je getraind hebt.</p>
+        <div class="streak" id="fitnessStreak">🔥 0 weken streak</div>
+        <div class="weekrow" id="weekRowFitness"></div>
+        <div class="bignum" id="fitnessCount">0<small>/3 deze week</small></div>
+        <div style="height:14px"></div>
+        <button class="btn-primary" id="logFitnessBtn">Ik heb vandaag getraind</button>
+        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch. Streak = aantal weken op rij dat je 3x hebt gehaald.</p>
       </div>
     </section>
 
@@ -112,6 +132,7 @@
       <div class="card">
         <h2>Push-ups</h2>
         <p class="sub">Doel: 100 per dag. Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is, camera telt automatisch mee.</p>
+        <div class="streak" id="pushStreak">🔥 0 dagen streak</div>
 
         <div class="pushup-wrap">
           <video id="video" playsinline muted></video>
@@ -128,13 +149,14 @@
 
         <div class="progress"><i id="pushProgress" style="width:0%"></i></div>
         <div class="progress-label"><span id="pushToday">0</span><span>doel: 100</span></div>
-        <p class="note" id="pushNote">De teller kijkt naar de op-en-neer beweging van je schouders/hoofd. Werkt het niet goed? Gebruik gerust de handmatige knop — belangrijker is dat je beweegt dan dat de telling perfect is.</p>
+        <p class="note" id="pushNote">De teller kalibreert zichzelf op je eigen op-en-neer beweging (past zich aan je afstand tot de camera aan). Zorg dat je volledige bovenlichaam in beeld blijft voor de beste telling. Klopt het een keer niet helemaal? Gebruik gerust de handmatige knop erbij — belangrijker is dat je beweegt dan dat de telling perfect is.</p>
       </div>
     </section>
   </main>
 
   <nav>
     <button class="tab active" data-tab="lopen">🏃 Lopen</button>
+    <button class="tab" data-tab="fitness">🏋️ Fitness</button>
     <button class="tab" data-tab="pushups">💪 Push-ups</button>
   </nav>
 </div>
@@ -160,64 +182,123 @@ const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 })();
 
 /* ---------- Tab navigatie ---------- */
+const TABS = ['lopen','fitness','pushups'];
 document.querySelectorAll('nav .tab').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tab-lopen').classList.toggle('hidden', btn.dataset.tab!=='lopen');
-    document.getElementById('tab-pushups').classList.toggle('hidden', btn.dataset.tab!=='pushups');
+    TABS.forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden', btn.dataset.tab!==t));
   });
 });
 
-/* ---------- Hardlopen ---------- */
+/* ---------- Hardlopen & Fitness (zelfde patroon: 3x per week) ---------- */
 function mondayOfWeek(d){
   const date = new Date(d);
   const day = (date.getDay() + 6) % 7; // maandag = 0
   date.setDate(date.getDate() - day);
   return date.toISOString().slice(0,10);
 }
-function renderRun(){
-  const runs = load('runs', []); // array van ISO datums
+function addWeeks(isoWeekStart, n){
+  const d = new Date(isoWeekStart);
+  d.setDate(d.getDate() + n*7);
+  return d.toISOString().slice(0,10);
+}
+// telt opeenvolgende weken (terugkijkend) die het weekdoel halen.
+// de huidige week telt alleen mee als die al het doel gehaald heeft;
+// anders wordt gekeken vanaf de vorige (afgeronde) week.
+function computeWeeklyStreak(dates, goal){
+  const weekCounts = {};
+  dates.forEach(d => {
+    const ws = mondayOfWeek(d);
+    weekCounts[ws] = (weekCounts[ws]||0) + 1;
+  });
+  const currentWeekStart = mondayOfWeek(todayISO());
+  let cursor = (weekCounts[currentWeekStart]||0) >= goal ? currentWeekStart : addWeeks(currentWeekStart, -1);
+  let streak = 0;
+  while((weekCounts[cursor]||0) >= goal){
+    streak++;
+    cursor = addWeeks(cursor, -1);
+  }
+  return streak;
+}
+function renderWeeklyTracker(key, goal, ids){
+  const dates = load(key, []); // array van ISO datums
   const weekStart = mondayOfWeek(todayISO());
   const weekDays = [...Array(7)].map((_,i)=>{
     const d = new Date(weekStart); d.setDate(d.getDate()+i);
     return d.toISOString().slice(0,10);
   });
-  const doneThisWeek = weekDays.filter(d => runs.includes(d));
-  const row = document.getElementById('weekRow');
+  const doneThisWeek = weekDays.filter(d => dates.includes(d));
+  const row = document.getElementById(ids.row);
   const labels = ['M','D','W','D','V','Z','Z'];
   row.innerHTML = weekDays.map((d,i)=>`
-    <div class="day ${runs.includes(d)?'done':''}">
-      <div class="dot">${runs.includes(d)?'✓':''}</div>
+    <div class="day ${dates.includes(d)?'done':''}">
+      <div class="dot">${dates.includes(d)?'✓':''}</div>
       <div class="label">${labels[i]}</div>
     </div>`).join('');
-  document.getElementById('runCount').innerHTML = `${doneThisWeek.length}<small>/3 deze week</small>`;
-  const btn = document.getElementById('logRunBtn');
-  if(runs.includes(todayISO())){
-    btn.textContent = 'Vandaag al gelogd ✓';
+  document.getElementById(ids.count).innerHTML = `${doneThisWeek.length}<small>/${goal} deze week</small>`;
+  const btn = document.getElementById(ids.btn);
+  if(dates.includes(todayISO())){
+    btn.textContent = ids.doneLabel;
     btn.disabled = true;
   } else {
-    btn.textContent = 'Ik heb vandaag gelopen';
+    btn.textContent = ids.actionLabel;
     btn.disabled = false;
   }
+  const streak = computeWeeklyStreak(dates, goal);
+  const streakEl = document.getElementById(ids.streak);
+  streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
+  streakEl.classList.toggle('zero', streak===0);
 }
-document.getElementById('logRunBtn').addEventListener('click', ()=>{
-  const runs = load('runs', []);
-  if(!runs.includes(todayISO())){
-    runs.push(todayISO());
-    save('runs', runs);
-    renderRun();
+function logToday(key, goal, ids){
+  const dates = load(key, []);
+  if(!dates.includes(todayISO())){
+    dates.push(todayISO());
+    save(key, dates);
+    renderWeeklyTracker(key, goal, ids);
   }
-});
-renderRun();
+}
+
+const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak',
+  doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen' };
+const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak',
+  doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind' };
+
+document.getElementById('logRunBtn').addEventListener('click', ()=>logToday('runs', 3, runIds));
+document.getElementById('logFitnessBtn').addEventListener('click', ()=>logToday('fitness', 3, fitnessIds));
+renderWeeklyTracker('runs', 3, runIds);
+renderWeeklyTracker('fitness', 3, fitnessIds);
 
 /* ---------- Push-ups: handmatig + camera ---------- */
+const PUSHUP_GOAL = 100;
+// telt opeenvolgende dagen (terugkijkend) die het dagdoel halen.
+// vandaag telt alleen mee als het doel al gehaald is; anders wordt vanaf gisteren gekeken.
+function computeDailyStreak(countsObj, goal){
+  const oneDay = 86400000;
+  let cursor = new Date(todayISO());
+  if((countsObj[todayISO()]||0) < goal){
+    cursor = new Date(cursor.getTime() - oneDay);
+  }
+  let streak = 0;
+  while(true){
+    const key = cursor.toISOString().slice(0,10);
+    if((countsObj[key]||0) >= goal){
+      streak++;
+      cursor = new Date(cursor.getTime() - oneDay);
+    } else break;
+  }
+  return streak;
+}
 function renderPushups(){
   const all = load('pushups', {});
   const count = all[todayISO()] || 0;
   document.getElementById('pushToday').textContent = count;
   document.getElementById('liveCount').textContent = count;
-  document.getElementById('pushProgress').style.width = Math.min(100, (count/100)*100) + '%';
+  document.getElementById('pushProgress').style.width = Math.min(100, (count/PUSHUP_GOAL)*100) + '%';
+  const streak = computeDailyStreak(all, PUSHUP_GOAL);
+  const streakEl = document.getElementById('pushStreak');
+  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+  streakEl.classList.toggle('zero', streak===0);
 }
 function addPushup(n=1){
   const all = load('pushups', {});
@@ -276,8 +357,16 @@ function stopCamera(){
 }
 camBtn.addEventListener('click', ()=>{ running ? stopCamera() : startCamera(); });
 
-// bijhouden van de verticale positie van schouders om op/neer-cycli te detecteren
-let ySamples = [];
+// bijhouden van de verticale positie van schouders om op/neer-cycli te detecteren.
+// ADAPTIEF: i.p.v. vaste drempelwaarden (die faalden zodra je verder/dichterbij
+// de camera stond) kalibreert dit zich continu op het bewegingsbereik van de
+// laatste paar seconden. Dat voorkomt gemiste reps zoals eerder (12 gedaan, 7 geteld).
+let smoothBuf = [];        // korte smoothing om cameraruis te dempen
+let motionBuf = [];        // {t, y} rollend venster voor min/max kalibratie
+const MOTION_WINDOW_MS = 4000;
+const MIN_RANGE = 0.035;   // minimale bewegingsuitslag (fractie van beeldhoogte) om als 'echte' rep te tellen
+const REP_DEBOUNCE_MS = 300;
+
 async function detectLoop(){
   if(!running) return;
   const poses = await detector.estimatePoses(video, { flipHorizontal:false });
@@ -288,7 +377,7 @@ async function detectLoop(){
     const byName = {}; kp.forEach(k=>byName[k.name]=k);
     const ls = byName['left_shoulder'], rs = byName['right_shoulder'];
 
-    // teken simpel skelet van schouders/ellebogen/polsen voor visuele feedback
+    // teken simpel skelet voor visuele feedback
     ctx.fillStyle = '#e8c547';
     kp.forEach(k=>{
       if(k.score > 0.4){
@@ -299,22 +388,38 @@ async function detectLoop(){
     });
 
     if(ls && rs && ls.score>0.4 && rs.score>0.4){
+      const now = Date.now();
       const shoulderY = (ls.y + rs.y)/2;
       const normY = shoulderY / video.videoHeight; // 0 (boven) .. 1 (onder)
-      ySamples.push(normY);
-      if(ySamples.length > 6) ySamples.shift();
-      const smooth = ySamples.reduce((a,b)=>a+b,0)/ySamples.length;
 
-      // hysterese-detectie: schouders zakken (down) dan weer stijgen (up) = 1 rep
-      const DOWN_THRESH = 0.55, UP_THRESH = 0.42;
-      const now = Date.now();
-      if(poseState === 'up' && smooth > DOWN_THRESH){
-        poseState = 'down';
-      } else if(poseState === 'down' && smooth < UP_THRESH){
-        poseState = 'up';
-        if(now - lastRepTime > 500){ // debounce
-          lastRepTime = now;
-          addPushup(1);
+      // lichte smoothing (3 frames) tegen jitter, zonder de piek plat te drukken
+      smoothBuf.push(normY);
+      if(smoothBuf.length > 3) smoothBuf.shift();
+      const y = smoothBuf.reduce((a,b)=>a+b,0)/smoothBuf.length;
+
+      motionBuf.push({t:now, y});
+      while(motionBuf.length && now - motionBuf[0].t > MOTION_WINDOW_MS) motionBuf.shift();
+
+      if(motionBuf.length > 5){
+        const ys = motionBuf.map(p=>p.y);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const range = maxY - minY;
+
+        if(range > MIN_RANGE){
+          // drempels relatief aan het geobserveerde bereik, i.p.v. vaste getallen
+          const downThresh = minY + range*0.65;
+          const upThresh   = minY + range*0.30;
+
+          if(poseState === 'up' && y > downThresh){
+            poseState = 'down';
+          } else if(poseState === 'down' && y < upThresh){
+            poseState = 'up';
+            if(now - lastRepTime > REP_DEBOUNCE_MS){
+              lastRepTime = now;
+              addPushup(1);
+            }
+          }
         }
       }
     }
