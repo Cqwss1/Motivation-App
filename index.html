@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BEWEEG — dagelijkse targets</title>
+<link rel="apple-touch-icon" href="data:image/png;base64,">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12201b;
+    --bg-2: #182b23;
+    --chalk: #f3efe6;
+    --chalk-dim: #b9c4bd;
+    --lane: #e8c547;
+    --signal: #ff5a2b;
+    --sage: #5b7a6b;
+    --line: rgba(243,239,230,0.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--chalk);
+    font-family:'Work Sans',sans-serif; overscroll-behavior:none;}
+  #app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
+    background:
+      repeating-linear-gradient(180deg, transparent 0 78px, var(--line) 78px 80px),
+      var(--bg);
+    padding-bottom:86px;}
+
+  header{padding:28px 22px 18px; position:relative; overflow:hidden;}
+  header::after{content:"";position:absolute; left:0; right:0; bottom:0; height:6px;
+    background:repeating-linear-gradient(90deg, var(--lane) 0 26px, transparent 26px 40px);
+    opacity:.55;}
+  .eyebrow{font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--sage); margin:0 0 6px;}
+  h1{font-family:'Oswald',sans-serif; font-weight:700; font-size:34px; letter-spacing:.01em;
+    margin:0; text-transform:uppercase;}
+  h1 span{color:var(--signal);}
+
+  main{flex:1; padding:6px 20px 20px;}
+  .card{background:var(--bg-2); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:16px;}
+  .card h2{font-family:'Oswald',sans-serif; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+    font-size:17px; margin:0 0 4px;}
+  .sub{color:var(--chalk-dim); font-size:13.5px; margin:0 0 16px; line-height:1.4;}
+
+  .weekrow{display:flex; gap:8px; margin:14px 0 18px;}
+  .day{flex:1; text-align:center;}
+  .day .dot{width:100%; aspect-ratio:1; border-radius:9px; border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-family:'Oswald'; font-size:13px;
+    color:var(--chalk-dim); transition:.15s;}
+  .day.done .dot{background:var(--signal); border-color:var(--signal); color:var(--bg); font-weight:700;}
+  .day .label{font-size:10px; color:var(--chalk-dim); margin-top:5px; text-transform:uppercase; letter-spacing:.05em;}
+
+  .bignum{font-family:'Oswald'; font-size:52px; font-weight:700; line-height:1; color:var(--lane);}
+  .bignum small{font-size:20px; color:var(--chalk-dim); font-weight:500;}
+
+  button{font-family:'Oswald'; text-transform:uppercase; letter-spacing:.04em; font-weight:600;
+    font-size:15px; border:none; border-radius:10px; padding:14px 18px; cursor:pointer; width:100%;}
+  .btn-primary{background:var(--signal); color:#1a0d05;}
+  .btn-primary:active{transform:scale(.98);}
+  .btn-primary:disabled{background:var(--sage); color:var(--bg-2); opacity:.6;}
+  .btn-ghost{background:transparent; border:1.5px solid var(--line); color:var(--chalk);}
+
+  .pushup-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:12px;
+    overflow:hidden; margin-bottom:16px;}
+  video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1);}
+  canvas{position:absolute; inset:0; width:100%; height:100%; transform:scaleX(-1);}
+  .hud{position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between;
+    align-items:flex-start; pointer-events:none;}
+  .hud .count{font-family:'Oswald'; font-size:44px; font-weight:700; color:var(--lane);
+    text-shadow:0 2px 8px rgba(0,0,0,.6);}
+  .hud .status{font-size:11px; background:rgba(0,0,0,.5); padding:4px 9px; border-radius:20px;
+    text-transform:uppercase; letter-spacing:.05em;}
+
+  .progress{height:10px; border-radius:6px; background:var(--line); overflow:hidden; margin:12px 0 4px;}
+  .progress i{display:block; height:100%; background:var(--lane); border-radius:6px; transition:width .25s;}
+  .progress-label{font-size:12px; color:var(--chalk-dim); display:flex; justify-content:space-between;}
+
+  nav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    background:var(--bg-2); border-top:1px solid var(--line); display:flex;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));}
+  nav button.tab{flex:1; background:transparent; padding:8px 4px; color:var(--chalk-dim); font-size:11.5px;}
+  nav button.tab.active{color:var(--signal);}
+  .hidden{display:none;}
+  .note{font-size:12px; color:var(--sage); margin-top:10px; line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <p class="eyebrow">Dag <span id="streakDay">—</span> · blijf bewegen</p>
+    <h1>BEWEEG<span>.</span></h1>
+  </header>
+
+  <main>
+    <!-- LOPEN TAB -->
+    <section id="tab-lopen">
+      <div class="card">
+        <h2>Hardlopen</h2>
+        <p class="sub">Doel: 3x per week. Vink af zodra je geweest bent.</p>
+        <div class="weekrow" id="weekRow"></div>
+        <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
+        <div style="height:14px"></div>
+        <button class="btn-primary" id="logRunBtn">Ik heb vandaag gelopen</button>
+        <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch.</p>
+      </div>
+    </section>
+
+    <!-- PUSHUPS TAB -->
+    <section id="tab-pushups" class="hidden">
+      <div class="card">
+        <h2>Push-ups</h2>
+        <p class="sub">Doel: 100 per dag. Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is, camera telt automatisch mee.</p>
+
+        <div class="pushup-wrap">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+          <div class="hud">
+            <div class="count" id="liveCount">0</div>
+            <div class="status" id="camStatus">camera uit</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="camBtn">Start camera & tel mee</button>
+        <div style="height:10px"></div>
+        <button class="btn-ghost" id="manualBtn">+1 handmatig toevoegen</button>
+
+        <div class="progress"><i id="pushProgress" style="width:0%"></i></div>
+        <div class="progress-label"><span id="pushToday">0</span><span>doel: 100</span></div>
+        <p class="note" id="pushNote">De teller kijkt naar de op-en-neer beweging van je schouders/hoofd. Werkt het niet goed? Gebruik gerust de handmatige knop — belangrijker is dat je beweegt dan dat de telling perfect is.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="tab active" data-tab="lopen">🏃 Lopen</button>
+    <button class="tab" data-tab="pushups">💪 Push-ups</button>
+  </nav>
+</div>
+
+<!-- Pose detection: TensorFlow.js + MoveNet, geladen via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.20.0/dist/tf-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.20.0/dist/tf-converter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.20.0/dist/tf-backend-webgl.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+
+<script>
+/* ---------- Helpers voor opslag ---------- */
+const todayISO = () => new Date().toISOString().slice(0,10);
+const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } };
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+/* dag-teller sinds eerste gebruik, puur voor motivatie */
+(function(){
+  let start = load('startDate', null);
+  if(!start){ start = todayISO(); save('startDate', start); }
+  const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
+  document.getElementById('streakDay').textContent = days;
+})();
+
+/* ---------- Tab navigatie ---------- */
+document.querySelectorAll('nav .tab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-lopen').classList.toggle('hidden', btn.dataset.tab!=='lopen');
+    document.getElementById('tab-pushups').classList.toggle('hidden', btn.dataset.tab!=='pushups');
+  });
+});
+
+/* ---------- Hardlopen ---------- */
+function mondayOfWeek(d){
+  const date = new Date(d);
+  const day = (date.getDay() + 6) % 7; // maandag = 0
+  date.setDate(date.getDate() - day);
+  return date.toISOString().slice(0,10);
+}
+function renderRun(){
+  const runs = load('runs', []); // array van ISO datums
+  const weekStart = mondayOfWeek(todayISO());
+  const weekDays = [...Array(7)].map((_,i)=>{
+    const d = new Date(weekStart); d.setDate(d.getDate()+i);
+    return d.toISOString().slice(0,10);
+  });
+  const doneThisWeek = weekDays.filter(d => runs.includes(d));
+  const row = document.getElementById('weekRow');
+  const labels = ['M','D','W','D','V','Z','Z'];
+  row.innerHTML = weekDays.map((d,i)=>`
+    <div class="day ${runs.includes(d)?'done':''}">
+      <div class="dot">${runs.includes(d)?'✓':''}</div>
+      <div class="label">${labels[i]}</div>
+    </div>`).join('');
+  document.getElementById('runCount').innerHTML = `${doneThisWeek.length}<small>/3 deze week</small>`;
+  const btn = document.getElementById('logRunBtn');
+  if(runs.includes(todayISO())){
+    btn.textContent = 'Vandaag al gelogd ✓';
+    btn.disabled = true;
+  } else {
+    btn.textContent = 'Ik heb vandaag gelopen';
+    btn.disabled = false;
+  }
+}
+document.getElementById('logRunBtn').addEventListener('click', ()=>{
+  const runs = load('runs', []);
+  if(!runs.includes(todayISO())){
+    runs.push(todayISO());
+    save('runs', runs);
+    renderRun();
+  }
+});
+renderRun();
+
+/* ---------- Push-ups: handmatig + camera ---------- */
+function renderPushups(){
+  const all = load('pushups', {});
+  const count = all[todayISO()] || 0;
+  document.getElementById('pushToday').textContent = count;
+  document.getElementById('liveCount').textContent = count;
+  document.getElementById('pushProgress').style.width = Math.min(100, (count/100)*100) + '%';
+}
+function addPushup(n=1){
+  const all = load('pushups', {});
+  all[todayISO()] = (all[todayISO()] || 0) + n;
+  save('pushups', all);
+  renderPushups();
+}
+document.getElementById('manualBtn').addEventListener('click', ()=>addPushup(1));
+renderPushups();
+
+/* Camera + pose detection */
+let detector = null, running = false, stream = null;
+let poseState = 'up', lastRepTime = 0;
+const video = document.getElementById('video');
+const canvas = document.getElementById('overlay');
+const ctx = canvas.getContext('2d');
+const camBtn = document.getElementById('camBtn');
+const statusEl = document.getElementById('camStatus');
+
+async function initDetector(){
+  await tf.setBackend('webgl');
+  await tf.ready();
+  detector = await poseDetection.createDetector(poseDetection.SupportedModels.MoveNet, {
+    modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING
+  });
+}
+
+async function startCamera(){
+  statusEl.textContent = 'model laden…';
+  camBtn.disabled = true;
+  try{
+    if(!detector) await initDetector();
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
+    video.srcObject = stream;
+    await video.play();
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 640;
+    running = true;
+    statusEl.textContent = 'volgt beweging';
+    camBtn.textContent = 'Stop camera';
+    camBtn.disabled = false;
+    detectLoop();
+  }catch(e){
+    statusEl.textContent = 'camera geweigerd';
+    camBtn.disabled = false;
+    document.getElementById('pushNote').textContent =
+      'Kon geen camera-toegang krijgen. Check of je Safari toestemming hebt gegeven (Instellingen > Safari > Camera), of gebruik de handmatige knop.';
+  }
+}
+function stopCamera(){
+  running = false;
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  statusEl.textContent = 'camera uit';
+  camBtn.textContent = 'Start camera & tel mee';
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+camBtn.addEventListener('click', ()=>{ running ? stopCamera() : startCamera(); });
+
+// bijhouden van de verticale positie van schouders om op/neer-cycli te detecteren
+let ySamples = [];
+async function detectLoop(){
+  if(!running) return;
+  const poses = await detector.estimatePoses(video, { flipHorizontal:false });
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(poses[0]){
+    const kp = poses[0].keypoints;
+    const byName = {}; kp.forEach(k=>byName[k.name]=k);
+    const ls = byName['left_shoulder'], rs = byName['right_shoulder'];
+
+    // teken simpel skelet van schouders/ellebogen/polsen voor visuele feedback
+    ctx.fillStyle = '#e8c547';
+    kp.forEach(k=>{
+      if(k.score > 0.4){
+        ctx.beginPath();
+        ctx.arc(k.x, k.y, 5, 0, 7);
+        ctx.fill();
+      }
+    });
+
+    if(ls && rs && ls.score>0.4 && rs.score>0.4){
+      const shoulderY = (ls.y + rs.y)/2;
+      const normY = shoulderY / video.videoHeight; // 0 (boven) .. 1 (onder)
+      ySamples.push(normY);
+      if(ySamples.length > 6) ySamples.shift();
+      const smooth = ySamples.reduce((a,b)=>a+b,0)/ySamples.length;
+
+      // hysterese-detectie: schouders zakken (down) dan weer stijgen (up) = 1 rep
+      const DOWN_THRESH = 0.55, UP_THRESH = 0.42;
+      const now = Date.now();
+      if(poseState === 'up' && smooth > DOWN_THRESH){
+        poseState = 'down';
+      } else if(poseState === 'down' && smooth < UP_THRESH){
+        poseState = 'up';
+        if(now - lastRepTime > 500){ // debounce
+          lastRepTime = now;
+          addPushup(1);
+        }
+      }
+    }
+  }
+  if(running) requestAnimationFrame(detectLoop);
+}
+</script>
+</body>
+</html>
