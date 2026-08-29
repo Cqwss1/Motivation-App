@@ -1,6 +1,6 @@
 {
-  "name": "M.",
-  "short_name": "M.",
+  "name": "Motivation App",
+  "short_name": "MA",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
