@@ -109,11 +109,14 @@
     border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:16px;}
   .goal-label{font-size:12.5px; color:var(--chalk-dim);}
   .goal-stepper{display:flex; align-items:center; gap:12px;}
-  .step-btn{width:30px; height:30px; padding:0; border-radius:50%; background:var(--bg-2);
+  .step-btn, .timer-step-btn{width:30px; height:30px; padding:0; border-radius:50%; background:var(--bg-2);
     border:1px solid var(--line); color:var(--chalk); font-size:16px; line-height:1; display:flex;
     align-items:center; justify-content:center;}
-  .step-btn:active{transform:scale(.92);}
+  .step-btn:active, .timer-step-btn:active{transform:scale(.92);}
   .goal-val{font-family:'Oswald'; font-size:16px; font-weight:600; min-width:28px; text-align:center;}
+  .timer-display{font-family:'Oswald'; font-size:48px; font-weight:700; text-align:center;
+    color:var(--lane); margin:16px 0 4px; letter-spacing:.02em;}
+  .timer-phase{text-align:center; font-size:12.5px; color:var(--chalk-dim); margin:0 0 16px;}
 
   .pushup-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:12px;
     overflow:hidden; margin-bottom:16px;}
@@ -297,8 +300,9 @@
           <div class="weekrow" id="weekRow"></div>
           <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
           <div style="height:14px"></div>
+          <input type="number" id="runKmInput" placeholder="Aantal km" step="0.1" inputmode="decimal">
           <button class="btn-primary" id="logRunBtn">Ik heb vandaag gelopen</button>
-          <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch.</p>
+          <p class="note">Weektelling loopt van maandag t/m zondag en reset automatisch. Vul de km in en klik daarna op de knop.</p>
         </div>
       </div>
 
@@ -454,9 +458,58 @@
         </div>
       </div>
       <div class="card">
+        <h2>Km per week</h2>
+        <p class="sub" id="kmTotal">0 km totaal gelopen</p>
+        <div id="kmChart"></div>
+      </div>
+      <div class="card">
         <h2>Badges</h2>
         <p class="sub">Verdien ze door consistent te blijven.</p>
         <div class="badgegrid" id="badgeGrid"></div>
+      </div>
+    </section>
+
+    <!-- STUDEREN TAB -->
+    <section id="tab-studeren" class="hidden">
+      <div class="card">
+        <h2>Countdown-timer</h2>
+        <p class="sub">Stel je studietijd en pauzetijd in. De timer wisselt vanzelf tussen studeren en pauze.</p>
+        <div class="goal-row">
+          <span class="goal-label">Studeren (min)</span>
+          <div class="goal-stepper">
+            <button class="timer-step-btn" data-timerkey="studyLen" data-dir="-1">−</button>
+            <span class="goal-val" id="studyLenVal">25</span>
+            <button class="timer-step-btn" data-timerkey="studyLen" data-dir="1">+</button>
+          </div>
+        </div>
+        <div class="goal-row">
+          <span class="goal-label">Pauze (min)</span>
+          <div class="goal-stepper">
+            <button class="timer-step-btn" data-timerkey="breakLen" data-dir="-1">−</button>
+            <span class="goal-val" id="breakLenVal">5</span>
+            <button class="timer-step-btn" data-timerkey="breakLen" data-dir="1">+</button>
+          </div>
+        </div>
+        <div class="timer-display" id="countdownDisplay">25:00</div>
+        <p class="timer-phase" id="countdownPhase">Klaar om te starten</p>
+        <div class="btn-row">
+          <button class="btn-ghost" id="countdownReset">Reset</button>
+          <button class="btn-primary" id="countdownToggle">Start</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Stopwatch</h2>
+        <p class="sub">Laat gewoon meelopen terwijl je studeert, en zet 'm zelf stop wanneer je klaar bent.</p>
+        <div class="timer-display" id="stopwatchDisplay">00:00</div>
+        <button class="btn-primary" id="stopwatchToggle">Start</button>
+      </div>
+
+      <div class="card">
+        <h2>Studietijd overzicht</h2>
+        <div class="statgrid" id="studyStatGrid"></div>
+        <p class="sub" style="margin-top:16px; margin-bottom:6px;">Laatste 7 dagen</p>
+        <div id="studyChart"></div>
       </div>
     </section>
   </main>
@@ -466,6 +519,7 @@
     <button class="tab" data-tab="water">💧 Water</button>
     <button class="tab" data-tab="gewicht">⚖️ Gewicht</button>
     <button class="tab" data-tab="fotos">📷 Foto's</button>
+    <button class="tab" data-tab="studeren">📚 Studeren</button>
     <button class="tab" data-tab="overzicht">📊 Overzicht</button>
   </nav>
 </div>
@@ -828,16 +882,17 @@ if(journalSaveEl) journalSaveEl.addEventListener('click', ()=>{
 renderJournal();
 
 /* ============ Hoofdnavigatie (5 tabs) ============ */
-const TABS = ['bewegen','water','gewicht','fotos','overzicht'];
+const TABS = ['bewegen','water','gewicht','fotos','studeren','overzicht'];
 document.querySelectorAll('nav .tab').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     TABS.forEach(t=>{ const el=$('tab-'+t); if(el) el.classList.toggle('hidden', btn.dataset.tab!==t); });
-    if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); renderWeekRecap(); renderRank(); checkBadges(); }
+    if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); renderWeekRecap(); renderRank(); renderKmChart(); checkBadges(); }
     if(btn.dataset.tab === 'fotos'){ renderPhotoGallery(); }
     if(btn.dataset.tab === 'water'){ renderWater(); }
     if(btn.dataset.tab === 'gewicht'){ renderWeight(); }
+    if(btn.dataset.tab === 'studeren'){ renderStudyOverview(); }
   });
 });
 document.querySelectorAll('#moveSegment button').forEach(btn=>{
@@ -1013,9 +1068,14 @@ function renderWeeklyTracker(key, ids){
   setHTML(ids.count, `${doneThisWeek.length}<small>/${goal} deze week</small>`);
   const btn = $(ids.btn);
   if(btn){
-    if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
+    if(key === 'runs'){
+      // lopen: knop blijft actief zodat de km ook achteraf bijgewerkt kan worden
+      btn.disabled = false;
+      btn.textContent = dates.includes(todayISO()) ? 'Km bijwerken' : ids.actionLabel;
+    } else if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
     else { btn.textContent = ids.actionLabel; btn.disabled = false; }
   }
+  if(key === 'runs') renderRunKm();
   const streak = computeWeeklyStreak(dates, goal, key);
   const streakEl = $(ids.streak);
   if(streakEl){
@@ -1040,7 +1100,55 @@ function logToday(key, ids){
 }
 const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen', freezeInfo:'runFreezeInfo', freezeBtn:'runFreezeBtn' };
 const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind', freezeInfo:'fitnessFreezeInfo', freezeBtn:'fitnessFreezeBtn' };
-const logRunBtnEl = $('logRunBtn'); if(logRunBtnEl) logRunBtnEl.addEventListener('click', ()=>logToday('runs', runIds));
+const logRunBtnEl = $('logRunBtn');
+if(logRunBtnEl) logRunBtnEl.addEventListener('click', ()=>{
+  const kmInput = $('runKmInput');
+  const km = kmInput ? parseFloat(kmInput.value) : NaN;
+  if(isNaN(km) || km <= 0){ showToast('Vul eerst het aantal km in'); return; }
+  const dates = load('runs', []);
+  const alreadyLogged = dates.includes(todayISO());
+  if(!alreadyLogged){ dates.push(todayISO()); save('runs', dates); }
+  const distances = load('runDistances', {});
+  distances[todayISO()] = Math.round(km*10)/10;
+  save('runDistances', distances);
+  renderWeeklyTracker('runs', runIds);
+  renderKmChart();
+  showToast(alreadyLogged ? '🏃 Km bijgewerkt' : '🏃 Run gelogd!');
+  if(!alreadyLogged) checkBadges();
+});
+function renderRunKm(){
+  const distances = load('runDistances', {});
+  const val = distances[todayISO()];
+  const input = $('runKmInput');
+  if(input && document.activeElement !== input) input.value = (val!=null) ? val : '';
+}
+function renderKmChart(){
+  const distances = load('runDistances', {});
+  const totalKm = Object.values(distances).reduce((a,b)=>a+b,0);
+  setText('kmTotal', `${formatLiters(totalKm)} km totaal gelopen`);
+  const weekTotals = {};
+  Object.entries(distances).forEach(([d,km])=>{
+    const ws = mondayOfWeek(d);
+    weekTotals[ws] = (weekTotals[ws]||0) + km;
+  });
+  const weeksToShow = 10;
+  const currentWeekStart = mondayOfWeek(todayISO());
+  const weeks = [];
+  for(let i=weeksToShow-1;i>=0;i--){ weeks.push(addWeeks(currentWeekStart, -i)); }
+  const maxVal = Math.max(1, ...weeks.map(w=>weekTotals[w]||0));
+  const laneColor = cssVar('--lane','#e8c547');
+  const lineColor = cssVar('--line','rgba(243,239,230,0.08)');
+  const barSlot=34, barW=22, chartH=90;
+  let bars = '';
+  weeks.forEach((w,i)=>{
+    const val = weekTotals[w]||0;
+    const h = Math.max(Math.round((val/maxVal)*chartH), val>0?2:0);
+    const x = i*barSlot+6, y = chartH-h;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="3" fill="${val>0?laneColor:lineColor}"/>`;
+  });
+  const totalWidth = weeksToShow*barSlot+8;
+  setHTML('kmChart', `<svg viewBox="0 0 ${totalWidth} ${chartH+8}" style="width:100%; height:120px;">${bars}</svg>`);
+}
 const logFitnessBtnEl = $('logFitnessBtn'); if(logFitnessBtnEl) logFitnessBtnEl.addEventListener('click', ()=>logToday('fitness', fitnessIds));
 const runFreezeBtnEl = $('runFreezeBtn');
 if(runFreezeBtnEl) runFreezeBtnEl.addEventListener('click', ()=>{
@@ -1531,6 +1639,157 @@ async function checkBadges(){
   }
   renderRank();
 }
+
+/* ============ Studeren: countdown-timer, stopwatch en overzicht ============ */
+function formatTimer(totalSeconds){
+  const m = Math.floor(Math.max(0,totalSeconds)/60);
+  const s = Math.max(0,totalSeconds)%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function logStudyMinutes(mins){
+  if(mins<=0) return;
+  const all = load('studyMinutes', {});
+  all[todayISO()] = (all[todayISO()]||0) + mins;
+  save('studyMinutes', all);
+  renderStudyOverview();
+  checkBadges();
+}
+
+const timerSettings = load('timerSettings', {studyLen:25, breakLen:5});
+let countdownState = { mode:'study', remaining: timerSettings.studyLen*60, running:false, intervalId:null };
+function renderCountdown(){
+  setText('countdownDisplay', formatTimer(countdownState.remaining));
+  setText('countdownPhase', countdownState.running
+    ? (countdownState.mode==='study' ? '📖 Aan het studeren...' : '☕ Pauze...')
+    : 'Klaar om te starten');
+  const btn = $('countdownToggle');
+  if(btn) btn.textContent = countdownState.running ? 'Pauzeren' : 'Start';
+}
+function countdownTick(){
+  countdownState.remaining -= 1;
+  if(countdownState.remaining <= 0){
+    if(countdownState.mode === 'study'){
+      logStudyMinutes(timerSettings.studyLen);
+      celebrate('📚 Studeersessie voltooid — tijd voor een pauze!');
+      countdownState.mode = 'break';
+      countdownState.remaining = timerSettings.breakLen*60;
+    } else {
+      showToast('⏰ Pauze voorbij — terug aan het studeren!');
+      countdownState.mode = 'study';
+      countdownState.remaining = timerSettings.studyLen*60;
+    }
+  }
+  renderCountdown();
+}
+function startCountdown(){
+  if(countdownState.running) return;
+  countdownState.running = true;
+  countdownState.intervalId = setInterval(countdownTick, 1000);
+  renderCountdown();
+}
+function pauseCountdown(){
+  countdownState.running = false;
+  if(countdownState.intervalId) clearInterval(countdownState.intervalId);
+  countdownState.intervalId = null;
+  renderCountdown();
+}
+const countdownToggleEl = $('countdownToggle');
+if(countdownToggleEl) countdownToggleEl.addEventListener('click', ()=>{
+  countdownState.running ? pauseCountdown() : startCountdown();
+});
+const countdownResetEl = $('countdownReset');
+if(countdownResetEl) countdownResetEl.addEventListener('click', ()=>{
+  pauseCountdown();
+  countdownState.mode = 'study';
+  countdownState.remaining = timerSettings.studyLen*60;
+  renderCountdown();
+});
+document.querySelectorAll('.timer-step-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    if(countdownState.running){ showToast('Pauzeer eerst de timer om dit aan te passen'); return; }
+    const key = btn.dataset.timerkey;
+    const dir = Number(btn.dataset.dir);
+    const min = key==='studyLen' ? 5 : 1;
+    const max = key==='studyLen' ? 120 : 30;
+    const step = key==='studyLen' ? 5 : 1;
+    let val = timerSettings[key] + dir*step;
+    if(val<min) val=min; if(val>max) val=max;
+    timerSettings[key] = val;
+    save('timerSettings', timerSettings);
+    setText(key+'Val', val);
+    if(key==='studyLen' && countdownState.mode==='study') countdownState.remaining = val*60;
+    if(key==='breakLen' && countdownState.mode==='break') countdownState.remaining = val*60;
+    renderCountdown();
+  });
+});
+setText('studyLenVal', timerSettings.studyLen);
+setText('breakLenVal', timerSettings.breakLen);
+renderCountdown();
+
+/* stopwatch: telt op, zelf te stoppen */
+let stopwatchState = { running:false, startTs:null, elapsedBeforePause:0, intervalId:null };
+function renderStopwatch(){
+  let totalSec = stopwatchState.elapsedBeforePause;
+  if(stopwatchState.running && stopwatchState.startTs){
+    totalSec += Math.floor((Date.now()-stopwatchState.startTs)/1000);
+  }
+  setText('stopwatchDisplay', formatTimer(totalSec));
+  const btn = $('stopwatchToggle');
+  if(btn) btn.textContent = stopwatchState.running ? 'Stop' : 'Start';
+}
+const stopwatchToggleEl = $('stopwatchToggle');
+if(stopwatchToggleEl) stopwatchToggleEl.addEventListener('click', ()=>{
+  if(!stopwatchState.running){
+    stopwatchState.running = true;
+    stopwatchState.startTs = Date.now();
+    stopwatchState.intervalId = setInterval(renderStopwatch, 1000);
+  } else {
+    stopwatchState.running = false;
+    const sessionSec = Math.floor((Date.now()-stopwatchState.startTs)/1000);
+    stopwatchState.elapsedBeforePause += sessionSec;
+    if(stopwatchState.intervalId) clearInterval(stopwatchState.intervalId);
+    stopwatchState.intervalId = null;
+    const minutes = Math.round(stopwatchState.elapsedBeforePause/60);
+    logStudyMinutes(minutes);
+    if(minutes>0) showToast(`📖 ${minutes} min studeren gelogd`);
+    stopwatchState.elapsedBeforePause = 0;
+    stopwatchState.startTs = null;
+  }
+  renderStopwatch();
+});
+renderStopwatch();
+
+function renderStudyOverview(){
+  const all = load('studyMinutes', {});
+  const todayMin = all[todayISO()] || 0;
+  const weekStart = mondayOfWeek(todayISO());
+  const weekDays = [...Array(7)].map((_,i)=>{ const d=new Date(weekStart); d.setDate(d.getDate()+i); return d.toISOString().slice(0,10); });
+  const weekMin = weekDays.reduce((sum,d)=>sum+(all[d]||0),0);
+  const totalMin = Object.values(all).reduce((a,b)=>a+b,0);
+  setHTML('studyStatGrid', `
+    <div class="stat"><div class="num">${todayMin}</div><div class="lbl">min vandaag</div></div>
+    <div class="stat"><div class="num">${weekMin}</div><div class="lbl">min deze week</div></div>
+    <div class="stat"><div class="num">${Math.round(totalMin/60*10)/10}</div><div class="lbl">uur totaal</div></div>`);
+
+  const laneColor = cssVar('--lane','#e8c547');
+  const lineColor = cssVar('--line','rgba(243,239,230,0.08)');
+  const chalkDim = cssVar('--chalk-dim','#b9c4bd');
+  const last7 = [...Array(7)].map((_,i)=>{ const d=new Date(); d.setDate(d.getDate()-(6-i)); return d.toISOString().slice(0,10); });
+  const maxVal = Math.max(30, ...last7.map(d=>all[d]||0));
+  const barSlot=44, barW=28, chartH=80;
+  const dayLabels = ['M','D','W','D','V','Z','Z'];
+  let bars='', labels='';
+  last7.forEach((d,i)=>{
+    const val = all[d]||0;
+    const h = Math.max(Math.round((val/maxVal)*chartH), val>0?2:0);
+    const x = i*barSlot+6, y = chartH-h;
+    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="3" fill="${val>0?laneColor:lineColor}"/>`;
+    labels += `<text x="${x+barW/2}" y="${chartH+16}" text-anchor="middle" font-size="10" fill="${chalkDim}">${dayLabels[new Date(d).getDay()===0?6:new Date(d).getDay()-1]}</text>`;
+  });
+  const totalWidth = 7*barSlot+8;
+  setHTML('studyChart', `<svg viewBox="0 0 ${totalWidth} ${chartH+22}" style="width:100%; height:120px;">${bars}${labels}</svg>`);
+}
+renderStudyOverview();
 
 /* ============ Init ============ */
 refreshGoalDisplays();
