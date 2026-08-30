@@ -45,6 +45,7 @@
 
   #onboarding{position:fixed; inset:0; background:rgba(10,14,12,0.92); z-index:2000;
     display:flex; align-items:center; justify-content:center; padding:24px;}
+  #onboarding.hidden{display:none;}
   #onboarding .box{background:var(--bg-2); border:1px solid var(--line); border-radius:16px;
     padding:26px; max-width:340px; width:100%; text-align:center;}
   #onboarding h2{font-family:'Oswald'; text-transform:uppercase; font-size:22px; margin:0 0 8px;}
@@ -146,6 +147,7 @@
   .photo-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
   #lightbox{position:fixed; inset:0; background:rgba(0,0,0,0.94); z-index:1500; display:flex;
     align-items:center; justify-content:center; flex-direction:column; padding:24px;}
+  #lightbox.hidden{display:none;}
   #lightbox img{max-width:100%; max-height:70vh; border-radius:10px;}
   #lightbox .lb-date{color:var(--chalk-dim); font-size:12.5px; margin-top:14px;}
   #lightbox .lb-actions{display:flex; gap:10px; margin-top:16px; width:100%; max-width:280px;}
@@ -153,6 +155,10 @@
   input[type=text], input[type=number]{width:100%; background:var(--bg); border:1.5px solid var(--line);
     border-radius:10px; padding:13px 14px; color:var(--chalk); font-size:16px; font-family:'Work Sans'; margin-bottom:12px;}
   input:focus{outline:none; border-color:var(--signal);}
+  textarea{width:100%; background:var(--bg); border:1.5px solid var(--line); border-radius:10px;
+    padding:13px 14px; color:var(--chalk); font-size:15px; font-family:'Work Sans'; margin-bottom:12px;
+    resize:vertical; min-height:76px;}
+  textarea:focus{outline:none; border-color:var(--signal);}
   .weight-list{margin-top:14px;}
   .weight-row{display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
   .weight-row .d{color:var(--chalk-dim);}
@@ -206,6 +212,14 @@
         <h2>Uitdaging van de dag</h2>
         <p class="sub" id="challengeText">—</p>
         <button class="btn-primary" id="challengeBtn">Voltooid ✓</button>
+      </div>
+
+      <div class="card">
+        <h2>Dagboek</h2>
+        <p class="sub">Schrijf 1 ding op over vandaag — een gedachte, iets waar je trots op bent, hoe een training voelde.</p>
+        <div class="streak" id="journalStreak">🔥 0 dagen streak</div>
+        <textarea id="journalInput" rows="3" placeholder="Vandaag..."></textarea>
+        <button class="btn-primary" id="journalSave">Opslaan</button>
       </div>
 
       <div class="segmented" id="moveSegment">
@@ -298,19 +312,19 @@
           <span class="goal-label">Doel per dag</span>
           <div class="goal-stepper">
             <button class="step-btn" data-goalkey="water" data-dir="-1">−</button>
-            <span class="goal-val" id="waterGoalVal">8</span>
+            <span class="goal-val" id="waterGoalVal">2,5</span>
             <button class="step-btn" data-goalkey="water" data-dir="1">+</button>
           </div>
         </div>
         <div class="streak" id="waterStreak">🔥 0 dagen streak</div>
-        <div class="bignum" id="waterCount">0<small>/8 glazen</small></div>
+        <div class="bignum" id="waterCount">0<small>/2,5 L</small></div>
         <div class="progress"><i id="waterProgress" style="width:0%"></i></div>
         <div style="height:14px"></div>
         <div class="btn-row">
-          <button class="btn-ghost" id="waterMinus">− glas</button>
-          <button class="btn-primary" id="waterPlus">+ glas</button>
+          <button class="btn-ghost" id="waterMinus">− 0,5L</button>
+          <button class="btn-primary" id="waterPlus">+ 0,5L</button>
         </div>
-        <p class="note">Reset elke dag om middernacht.</p>
+        <p class="note">Reset elke dag om middernacht. Doel instelbaar per halve liter.</p>
       </div>
     </section>
 
@@ -397,10 +411,13 @@ function seededIndex(str, mod){
   for(let i=0;i<str.length;i++){ hash = (hash*31 + str.charCodeAt(i)) % 100000; }
   return hash % mod;
 }
+function formatLiters(v){
+  return (Math.round(v*10)/10).toString().replace('.', ',');
+}
 
 /* ============ Instelbare doelen (per persoon aan te passen, lokaal opgeslagen) ============ */
-const GOAL_DEFAULTS = { runs:3, fitness:3, pushups:100, water:8 };
-const GOAL_LIMITS = { runs:[1,7,1], fitness:[1,7,1], pushups:[10,300,10], water:[1,15,1] };
+const GOAL_DEFAULTS = { runs:3, fitness:3, pushups:100, water:2.5 };
+const GOAL_LIMITS = { runs:[1,7,1], fitness:[1,7,1], pushups:[10,300,10], water:[0.5,6,0.5] };
 function getGoal(key){
   const v = load('goal_'+key, null);
   return (typeof v === 'number' && v>0) ? v : GOAL_DEFAULTS[key];
@@ -410,14 +427,14 @@ function refreshGoalDisplays(){
   setText('runGoalVal', getGoal('runs'));
   setText('fitnessGoalVal', getGoal('fitness'));
   setText('pushupsGoalVal', getGoal('pushups'));
-  setText('waterGoalVal', getGoal('water'));
+  setText('waterGoalVal', formatLiters(getGoal('water')));
 }
 document.querySelectorAll('.step-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const key = btn.dataset.goalkey;
     const dir = Number(btn.dataset.dir);
     const [min,max,step] = GOAL_LIMITS[key];
-    let val = getGoal(key) + dir*step;
+    let val = Math.round((getGoal(key) + dir*step) * 10) / 10;
     if(val<min) val=min; if(val>max) val=max;
     setGoal(key, val);
     refreshGoalDisplays();
@@ -461,11 +478,13 @@ function updateBadgeCount(){
   const fitness = load('fitness', []);
   const pushups = load('pushups', {});
   const water = load('water', {});
+  const journal = load('journal', {});
   let outstanding = 0;
   if(!runs.includes(todayISO())) outstanding++;
   if(!fitness.includes(todayISO())) outstanding++;
   if((pushups[todayISO()]||0) < getGoal('pushups')) outstanding++;
   if((water[todayISO()]||0) < getGoal('water')) outstanding++;
+  if(!journal[todayISO()]) outstanding++;
   try{ outstanding>0 ? navigator.setAppBadge(outstanding) : navigator.clearAppBadge(); }catch(e){}
 }
 
@@ -517,13 +536,17 @@ setText('quoteText', QUOTES[seededIndex(todayISO()+'-q', QUOTES.length)]);
 /* ============ Uitdaging van de dag ============ */
 const CHALLENGE_POOL = [
   "Doe 20 extra push-ups bovenop je doel.",
-  "Ga 10 minuten extra wandelen na het sporten.",
-  "Drink vandaag 2 glazen water meer dan je doel.",
+  "Ga 10 minuten extra wandelen, wanneer het jou uitkomt.",
+  "Drink vandaag 0,5 liter water extra.",
   "Doe een korte stretch-sessie van 5 minuten voor het slapen.",
-  "Neem vandaag altijd de trap in plaats van de lift.",
-  "Doe je training vandaag 15 minuten eerder dan normaal.",
-  "Zet je telefoon 30 min weg na het sporten en rust echt uit.",
-  "Doe 3 sets van 15 squats verspreid over de dag."
+  "Neem vandaag de trap in plaats van de lift, elke keer dat het kan.",
+  "Doe een 'cooldown' van 5 minuten na je training vandaag.",
+  "Zet je telefoon 30 minuten weg na het sporten en rust echt uit.",
+  "Doe 3 sets van 15 squats, verspreid over de dag.",
+  "Probeer vandaag een oefening die je nog nooit hebt gedaan.",
+  "Doe je training vandaag zonder muziek of afleiding — alleen focus.",
+  "Doe 2 minuten planken, in 1 of meerdere keren.",
+  "Doe 10 minuten mobility/rekwerk, los van je training."
 ];
 function todaysChallenge(){ return CHALLENGE_POOL[seededIndex(todayISO()+'-c', CHALLENGE_POOL.length)]; }
 function renderChallenge(){
@@ -544,6 +567,40 @@ if(challengeBtnEl) challengeBtnEl.addEventListener('click', ()=>{
   checkBadges();
 });
 renderChallenge();
+
+/* ============ Dagboek: 1x per dag iets opschrijven ============ */
+function renderJournal(){
+  const all = load('journal', {});
+  const todayEntry = all[todayISO()] || '';
+  const input = $('journalInput');
+  if(input && document.activeElement !== input) input.value = todayEntry;
+  const btn = $('journalSave');
+  if(btn) btn.textContent = todayEntry ? 'Bijwerken' : 'Opslaan';
+  const binary = {};
+  Object.entries(all).forEach(([d,v])=>{ if(v && v.trim()) binary[d] = 1; });
+  const streak = computeDailyStreak(binary, 1);
+  const streakEl = $('journalStreak');
+  if(streakEl){
+    streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+    streakEl.classList.toggle('zero', streak===0);
+  }
+}
+const journalSaveEl = $('journalSave');
+if(journalSaveEl) journalSaveEl.addEventListener('click', ()=>{
+  const input = $('journalInput');
+  const val = input ? input.value.trim() : '';
+  if(!val){ showToast('Schrijf eerst iets op'); return; }
+  const all = load('journal', {});
+  const isFirst = Object.keys(all).length === 0;
+  const already = !!all[todayISO()];
+  all[todayISO()] = val;
+  save('journal', all);
+  renderJournal();
+  showToast(already ? '📝 Dagboek bijgewerkt' : '📝 Opgeslagen');
+  if(isFirst) celebrate('📝 Eerste dagboek-notitie!');
+  checkBadges();
+});
+renderJournal();
 
 /* ============ Hoofdnavigatie (5 tabs) ============ */
 const TABS = ['bewegen','water','gewicht','fotos','overzicht'];
@@ -786,12 +843,12 @@ async function detectLoop(){
   if(running) requestAnimationFrame(detectLoop);
 }
 
-/* ============ Water (instelbaar dagdoel) ============ */
+/* ============ Water (in liters, instelbaar per 0,5L) ============ */
 function renderWater(){
   const goal = getGoal('water');
   const all = load('water', {});
   const count = all[todayISO()] || 0;
-  setHTML('waterCount', `${count}<small>/${goal} glazen</small>`);
+  setHTML('waterCount', `${formatLiters(count)}<small>/${formatLiters(goal)} L</small>`);
   const bar = $('waterProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
   const streak = computeDailyStreak(all, goal);
   const streakEl = $('waterStreak');
@@ -807,15 +864,15 @@ function renderWater(){
 }
 function addWater(delta){
   const all = load('water', {});
-  let v = (all[todayISO()]||0) + delta;
+  let v = Math.round(((all[todayISO()]||0) + delta) * 10) / 10; // afronden voorkomt float-afrondingsfouten (0.1+0.2 etc.)
   if(v < 0) v = 0;
   all[todayISO()] = v;
   save('water', all);
   renderWater();
   checkBadges();
 }
-const waterPlusEl = $('waterPlus'); if(waterPlusEl) waterPlusEl.addEventListener('click', ()=>addWater(1));
-const waterMinusEl = $('waterMinus'); if(waterMinusEl) waterMinusEl.addEventListener('click', ()=>addWater(-1));
+const waterPlusEl = $('waterPlus'); if(waterPlusEl) waterPlusEl.addEventListener('click', ()=>addWater(0.5));
+const waterMinusEl = $('waterMinus'); if(waterMinusEl) waterMinusEl.addEventListener('click', ()=>addWater(-0.5));
 
 /* ============ Gewicht ============ */
 function renderWeight(){
@@ -1046,9 +1103,12 @@ async function checkBadges(){
   const water = load('water', {});
   const weight = load('weight', {});
   const challenges = load('challenges', {});
+  const journal = load('journal', {});
   const photos = await getAllPhotos();
 
   const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
+  const journalBinary = {};
+  Object.entries(journal).forEach(([d,v])=>{ if(v && v.trim()) journalBinary[d] = 1; });
 
   const defs = [
     {id:'first_run', emoji:'🏃', title:'Eerste stap', desc:'Log je eerste keer lopen', unlocked: runs.length>=1},
@@ -1062,7 +1122,9 @@ async function checkBadges(){
     {id:'first_weight', emoji:'⚖️', title:'Op de weegschaal', desc:'Log je eerste gewicht', unlocked: Object.keys(weight).length>=1},
     {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel gehaald', unlocked: computeBestDailyStreak(water, getGoal('water'))>=7},
     {id:'first_challenge', emoji:'🎯', title:'Uitdager', desc:'Voltooi een dagelijkse uitdaging', unlocked: Object.keys(challenges).length>=1},
-    {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1},
+    {id:'first_journal', emoji:'📝', title:'Vastgelegd op papier', desc:'Schrijf je eerste dagboek-notitie', unlocked: Object.keys(journal).length>=1},
+    {id:'journal_streak7', emoji:'✍️', title:'Trouwe schrijver', desc:'7 dagen op rij een notitie geschreven', unlocked: computeBestDailyStreak(journalBinary, 1)>=7},
+    {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1 && Object.keys(journal).length>=1},
   ];
 
   const unlockedStore = load('unlockedBadges', {});
