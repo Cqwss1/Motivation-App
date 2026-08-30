@@ -43,7 +43,7 @@
       var(--bg);
     padding-bottom:86px;}
 
-  header{padding:28px 22px 18px; position:relative; overflow:hidden;}
+  header{padding:calc(28px + env(safe-area-inset-top) + 19px) 22px 18px; position:relative; overflow:hidden;}
   header::after{content:"";position:absolute; left:0; right:0; bottom:0; height:6px;
     background:repeating-linear-gradient(90deg, var(--lane) 0 26px, transparent 26px 40px);
     opacity:.55;}
@@ -56,7 +56,7 @@
     font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--lane);
     background:rgba(232,197,71,0.1); border:1px solid rgba(232,197,71,0.3); border-radius:16px;
     padding:5px 11px; margin-top:10px;}
-  .theme-toggle{position:absolute; top:24px; right:20px; width:38px; height:38px; padding:0;
+  .theme-toggle{position:absolute; top:calc(20px + env(safe-area-inset-top) + 19px); right:20px; width:38px; height:38px; padding:0;
     background:var(--bg-2); border:1px solid var(--line); border-radius:50%; font-size:16px;
     display:flex; align-items:center; justify-content:center;}
 
@@ -267,10 +267,6 @@
         <h2>Dagboek</h2>
         <p class="sub">Schrijf 1 ding op over vandaag — een gedachte, iets waar je trots op bent, hoe een training voelde.</p>
         <div class="streak" id="journalStreak">🔥 0 dagen streak</div>
-        <div class="freeze-row">
-          <span id="journalFreezeInfo">🧊 Vrijkaart beschikbaar deze week</span>
-          <button class="btn-ghost" id="journalFreezeBtn">Gebruiken</button>
-        </div>
         <textarea id="journalInput" rows="3" placeholder="Vandaag..."></textarea>
         <button class="btn-primary" id="journalSave">Opslaan</button>
       </div>
@@ -294,6 +290,10 @@
             </div>
           </div>
           <div class="streak" id="runStreak">🔥 0 weken streak</div>
+          <div class="freeze-row">
+            <span id="runFreezeInfo">🧊 0 vrijkaarten beschikbaar</span>
+            <button class="btn-ghost" id="runFreezeBtn">Gebruiken</button>
+          </div>
           <div class="weekrow" id="weekRow"></div>
           <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
           <div style="height:14px"></div>
@@ -315,6 +315,10 @@
             </div>
           </div>
           <div class="streak" id="fitnessStreak">🔥 0 weken streak</div>
+          <div class="freeze-row">
+            <span id="fitnessFreezeInfo">🧊 0 vrijkaarten beschikbaar</span>
+            <button class="btn-ghost" id="fitnessFreezeBtn">Gebruiken</button>
+          </div>
           <div class="weekrow" id="weekRowFitness"></div>
           <div class="bignum" id="fitnessCount">0<small>/3 deze week</small></div>
           <div style="height:14px"></div>
@@ -374,10 +378,6 @@
           </div>
         </div>
         <div class="streak" id="waterStreak">🔥 0 dagen streak</div>
-        <div class="freeze-row">
-          <span id="waterFreezeInfo">🧊 Vrijkaart beschikbaar deze week</span>
-          <button class="btn-ghost" id="waterFreezeBtn">Gebruiken</button>
-        </div>
         <div class="bignum" id="waterCount">0<small>/2,5 L</small></div>
         <div class="progress"><i id="waterProgress" style="width:0%"></i></div>
         <div style="height:14px"></div>
@@ -418,6 +418,8 @@
         <h2>Jouw rang</h2>
         <p class="sub">Gebaseerd op alles wat je tot nu toe hebt gedaan.</p>
         <div class="statgrid" id="rankDetail"></div>
+        <div class="progress" style="margin-top:14px;"><i id="rankProgress" style="width:0%"></i></div>
+        <p class="note" id="rankNote">—</p>
       </div>
       <div class="card">
         <h2>Weekoverzicht</h2>
@@ -543,7 +545,16 @@ function renderRank(){
   setText('rankPill', `🏅 ${rank.name}`);
   setHTML('rankDetail', `
     <div class="stat"><div class="num">${rank.name}</div><div class="lbl">huidige rang</div></div>
-    <div class="stat"><div class="num">${next ? (next.min-score) : '—'}</div><div class="lbl">${next ? 'punten tot '+next.name : 'hoogste rang bereikt'}</div></div>`);
+    <div class="stat"><div class="num">${score}</div><div class="lbl">totaalpunten</div></div>`);
+  const progressEl = $('rankProgress');
+  if(next){
+    const pct = Math.min(100, Math.round(((score-rank.min)/(next.min-rank.min))*100));
+    if(progressEl) progressEl.style.width = pct+'%';
+    setText('rankNote', `Nog ${next.min-score} punten tot rang "${next.name}". Je verdient punten met: elke keer lopen/fitness, elke dag dat je je push-up- of waterdoel haalt, dagboek-notities, voltooide uitdagingen en badges.`);
+  } else {
+    if(progressEl) progressEl.style.width = '100%';
+    setText('rankNote', 'Je hebt de hoogste rang bereikt. 🎉');
+  }
 }
 
 /* ============ Instelbare doelen (per persoon aan te passen, lokaal opgeslagen) ============ */
@@ -792,21 +803,13 @@ function renderJournal(){
   if(btn) btn.textContent = todayEntry ? 'Bijwerken' : 'Opslaan';
   const binary = {};
   Object.entries(all).forEach(([d,v])=>{ if(v && v.trim()) binary[d] = 1; });
-  const streak = computeDailyStreak(binary, 1, 'journal');
+  const streak = computeDailyStreak(binary, 1);
   const streakEl = $('journalStreak');
   if(streakEl){
     streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
     streakEl.classList.toggle('zero', streak===0);
   }
-  renderFreezeRow('journal', 'journalFreezeInfo', 'journalFreezeBtn');
 }
-const journalFreezeBtnEl = $('journalFreezeBtn');
-if(journalFreezeBtnEl) journalFreezeBtnEl.addEventListener('click', ()=>{
-  const all = load('journal', {});
-  const binary = {};
-  Object.entries(all).forEach(([d,v])=>{ if(v && v.trim()) binary[d] = 1; });
-  useFreeze('journal', 1, binary, ()=>{ renderJournal(); checkBadges(); });
-});
 const journalSaveEl = $('journalSave');
 if(journalSaveEl) journalSaveEl.addEventListener('click', ()=>{
   const input = $('journalInput');
@@ -846,91 +849,9 @@ document.querySelectorAll('#moveSegment button').forEach(btn=>{
   });
 });
 
-/* ============ Hardlopen & Fitness (instelbaar aantal keer per week) ============ */
-function mondayOfWeek(d){
-  const date = new Date(d);
-  const day = (date.getDay() + 6) % 7;
-  date.setDate(date.getDate() - day);
-  return date.toISOString().slice(0,10);
-}
-function addWeeks(isoWeekStart, n){
-  const d = new Date(isoWeekStart);
-  d.setDate(d.getDate() + n*7);
-  return d.toISOString().slice(0,10);
-}
-function computeWeeklyStreak(dates, goal){
-  const weekCounts = {};
-  dates.forEach(d => { const ws = mondayOfWeek(d); weekCounts[ws] = (weekCounts[ws]||0) + 1; });
-  const currentWeekStart = mondayOfWeek(todayISO());
-  let cursor = (weekCounts[currentWeekStart]||0) >= goal ? currentWeekStart : addWeeks(currentWeekStart, -1);
-  let streak = 0;
-  while((weekCounts[cursor]||0) >= goal){ streak++; cursor = addWeeks(cursor, -1); }
-  return streak;
-}
-function computeBestWeeklyStreak(dates, goal){
-  const weekCounts = {};
-  dates.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
-  const weeks = Object.keys(weekCounts).sort();
-  if(weeks.length===0) return 0;
-  let best=0, cur=0, cursor=weeks[0];
-  const end = mondayOfWeek(todayISO());
-  while(cursor <= end){
-    if((weekCounts[cursor]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
-    cursor = addWeeks(cursor, 1);
-  }
-  return best;
-}
-function renderWeeklyTracker(key, ids){
-  const goal = getGoal(key);
-  const dates = load(key, []);
-  const weekStart = mondayOfWeek(todayISO());
-  const weekDays = [...Array(7)].map((_,i)=>{
-    const d = new Date(weekStart); d.setDate(d.getDate()+i);
-    return d.toISOString().slice(0,10);
-  });
-  const doneThisWeek = weekDays.filter(d => dates.includes(d));
-  const labels = ['M','D','W','D','V','Z','Z'];
-  setHTML(ids.row, weekDays.map((d,i)=>`
-    <div class="day ${dates.includes(d)?'done':''}">
-      <div class="dot">${dates.includes(d)?'✓':''}</div>
-      <div class="label">${labels[i]}</div>
-    </div>`).join(''));
-  setHTML(ids.count, `${doneThisWeek.length}<small>/${goal} deze week</small>`);
-  const btn = $(ids.btn);
-  if(btn){
-    if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
-    else { btn.textContent = ids.actionLabel; btn.disabled = false; }
-  }
-  const streak = computeWeeklyStreak(dates, goal);
-  const streakEl = $(ids.streak);
-  if(streakEl){
-    streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
-    streakEl.classList.toggle('zero', streak===0);
-  }
-  if(doneThisWeek.length >= goal){
-    const ck = `week:${key}:${weekStart}:${goal}`;
-    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`); }
-  }
-  updateBadgeCount();
-}
-function logToday(key, ids){
-  const dates = load(key, []);
-  if(!dates.includes(todayISO())){
-    dates.push(todayISO());
-    save(key, dates);
-    renderWeeklyTracker(key, ids);
-    checkBadges();
-  }
-}
-const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen' };
-const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind' };
-const logRunBtnEl = $('logRunBtn'); if(logRunBtnEl) logRunBtnEl.addEventListener('click', ()=>logToday('runs', runIds));
-const logFitnessBtnEl = $('logFitnessBtn'); if(logFitnessBtnEl) logFitnessBtnEl.addEventListener('click', ()=>logToday('fitness', fitnessIds));
-renderWeeklyTracker('runs', runIds);
-renderWeeklyTracker('fitness', fitnessIds);
-
-/* ============ Push-ups (instelbaar dagdoel) ============ */
-/* ============ Streak-vrijkaarten: 1x per week een gemiste dag beschermen ============ */
+/* ============ Streak-vrijkaarten (stapelbaar, met timer) ============ */
+/* push-ups: 1 nieuwe vrijkaart per week. Lopen & fitness: 1 nieuwe vrijkaart per maand. Ze stapelen op. */
+const FREEZE_INTERVALS = { pushups: 7, runs: 30, fitness: 30 };
 function isFrozen(category, dateKey){
   if(!category) return false;
   const freezes = load('freezes', {});
@@ -961,33 +882,178 @@ function computeBestDailyStreak(countsObj, goal, category){
   }
   return best;
 }
-function renderFreezeRow(category, infoId, btnId){
-  const weekStart = mondayOfWeek(todayISO());
-  const usage = load('freezeUsage', {});
-  const usedThisWeek = !!(usage[category] && usage[category][weekStart]);
-  setText(infoId, usedThisWeek ? '🧊 Vrijkaart deze week al gebruikt' : '🧊 Vrijkaart beschikbaar deze week');
-  const btn = $(btnId);
-  if(btn){
-    btn.disabled = usedThisWeek;
-    btn.textContent = usedThisWeek ? 'Gebruikt' : 'Gebruiken';
+/* kent nieuwe vrijkaarten toe zodra hun interval verstreken is, en stapelt ze op */
+function grantFreezeCreditsIfDue(category){
+  const intervalDays = FREEZE_INTERVALS[category];
+  const lastGrant = load('freezeLastGrant', {});
+  if(!lastGrant[category]){
+    // eerste keer: startpunt zetten + 1 welkomst-vrijkaart geven
+    lastGrant[category] = todayISO();
+    save('freezeLastGrant', lastGrant);
+    const credits = load('freezeCredits', {});
+    credits[category] = (credits[category]||0) + 1;
+    save('freezeCredits', credits);
+    return;
+  }
+  const daysSince = Math.floor((new Date(todayISO()) - new Date(lastGrant[category])) / 86400000);
+  if(daysSince >= intervalDays){
+    const grants = Math.floor(daysSince / intervalDays);
+    const credits = load('freezeCredits', {});
+    credits[category] = (credits[category]||0) + grants;
+    save('freezeCredits', credits);
+    const newLast = new Date(new Date(lastGrant[category]).getTime() + grants*intervalDays*86400000).toISOString().slice(0,10);
+    lastGrant[category] = newLast;
+    save('freezeLastGrant', lastGrant);
   }
 }
-function useFreeze(category, goal, countsObj, onDone){
-  const weekStart = mondayOfWeek(todayISO());
-  const usage = load('freezeUsage', {});
-  if(usage[category] && usage[category][weekStart]){ showToast('Je vrijkaart is deze week al gebruikt'); return; }
+function daysUntilNextFreeze(category){
+  const intervalDays = FREEZE_INTERVALS[category];
+  const lastGrant = load('freezeLastGrant', {});
+  const last = lastGrant[category] || todayISO();
+  const daysSince = Math.floor((new Date(todayISO()) - new Date(last)) / 86400000);
+  return Math.max(0, intervalDays - daysSince);
+}
+function renderFreezeRow(category, infoId, btnId){
+  const credits = load('freezeCredits', {})[category] || 0;
+  const daysLeft = daysUntilNextFreeze(category);
+  setText(infoId, `🧊 ${credits} vrijkaart${credits===1?'':'en'} · nieuwe over ${daysLeft} ${daysLeft===1?'dag':'dagen'}`);
+  const btn = $(btnId);
+  if(btn){ btn.disabled = credits<=0; btn.textContent = credits>0 ? 'Gebruiken' : 'Geen vrijkaarten'; }
+}
+function useDailyFreeze(category, goal, countsObj, onDone){
+  const credits = load('freezeCredits', {});
+  if(!(credits[category] > 0)){ showToast('Je hebt geen vrijkaarten meer'); return; }
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
   if((countsObj[yesterday]||0) >= goal){ showToast('Gisteren had je je doel al gehaald — geen vrijkaart nodig'); return; }
+  if(isFrozen(category, yesterday)){ showToast('Gisteren is al beschermd'); return; }
   const freezes = load('freezes', {});
   if(!freezes[category]) freezes[category] = [];
-  if(!freezes[category].includes(yesterday)) freezes[category].push(yesterday);
+  freezes[category].push(yesterday);
   save('freezes', freezes);
-  if(!usage[category]) usage[category] = {};
-  usage[category][weekStart] = true;
-  save('freezeUsage', usage);
+  credits[category] -= 1;
+  save('freezeCredits', credits);
   celebrate('🧊 Vrijkaart gebruikt — streak hersteld!');
   if(onDone) onDone();
 }
+function useWeeklyFreeze(category, goal, datesArray, onDone){
+  const credits = load('freezeCredits', {});
+  if(!(credits[category] > 0)){ showToast('Je hebt geen vrijkaarten meer'); return; }
+  const weekCounts = {};
+  datesArray.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
+  let cursor = addWeeks(mondayOfWeek(todayISO()), -1);
+  let target = null;
+  for(let i=0;i<8;i++){
+    if((weekCounts[cursor]||0) < goal && !isFrozen(category, cursor)){ target = cursor; break; }
+    cursor = addWeeks(cursor, -1);
+  }
+  if(!target){ showToast('Geen gemiste week gevonden om te beschermen'); return; }
+  const freezes = load('freezes', {});
+  if(!freezes[category]) freezes[category] = [];
+  freezes[category].push(target);
+  save('freezes', freezes);
+  credits[category] -= 1;
+  save('freezeCredits', credits);
+  celebrate('🧊 Vrijkaart gebruikt — weekstreak hersteld!');
+  if(onDone) onDone();
+}
+grantFreezeCreditsIfDue('pushups');
+grantFreezeCreditsIfDue('runs');
+grantFreezeCreditsIfDue('fitness');
+
+/* ============ Hardlopen & Fitness (instelbaar aantal keer per week) ============ */
+function mondayOfWeek(d){
+  const date = new Date(d);
+  const day = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - day);
+  return date.toISOString().slice(0,10);
+}
+function addWeeks(isoWeekStart, n){
+  const d = new Date(isoWeekStart);
+  d.setDate(d.getDate() + n*7);
+  return d.toISOString().slice(0,10);
+}
+function computeWeeklyStreak(dates, goal, category){
+  const weekCounts = {};
+  dates.forEach(d => { const ws = mondayOfWeek(d); weekCounts[ws] = (weekCounts[ws]||0) + 1; });
+  const currentWeekStart = mondayOfWeek(todayISO());
+  const metGoal = (ws) => (weekCounts[ws]||0) >= goal || isFrozen(category, ws);
+  let cursor = metGoal(currentWeekStart) ? currentWeekStart : addWeeks(currentWeekStart, -1);
+  let streak = 0;
+  while(metGoal(cursor)){ streak++; cursor = addWeeks(cursor, -1); }
+  return streak;
+}
+function computeBestWeeklyStreak(dates, goal, category){
+  const weekCounts = {};
+  dates.forEach(d=>{ const ws=mondayOfWeek(d); weekCounts[ws]=(weekCounts[ws]||0)+1; });
+  const weeks = Object.keys(weekCounts).sort();
+  if(weeks.length===0) return 0;
+  let best=0, cur=0, cursor=weeks[0];
+  const end = mondayOfWeek(todayISO());
+  while(cursor <= end){
+    if((weekCounts[cursor]||0) >= goal || isFrozen(category, cursor)){ cur++; best=Math.max(best,cur); } else cur=0;
+    cursor = addWeeks(cursor, 1);
+  }
+  return best;
+}
+function renderWeeklyTracker(key, ids){
+  const goal = getGoal(key);
+  const dates = load(key, []);
+  const weekStart = mondayOfWeek(todayISO());
+  const weekDays = [...Array(7)].map((_,i)=>{
+    const d = new Date(weekStart); d.setDate(d.getDate()+i);
+    return d.toISOString().slice(0,10);
+  });
+  const doneThisWeek = weekDays.filter(d => dates.includes(d));
+  const labels = ['M','D','W','D','V','Z','Z'];
+  setHTML(ids.row, weekDays.map((d,i)=>`
+    <div class="day ${dates.includes(d)?'done':''}">
+      <div class="dot">${dates.includes(d)?'✓':''}</div>
+      <div class="label">${labels[i]}</div>
+    </div>`).join(''));
+  setHTML(ids.count, `${doneThisWeek.length}<small>/${goal} deze week</small>`);
+  const btn = $(ids.btn);
+  if(btn){
+    if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
+    else { btn.textContent = ids.actionLabel; btn.disabled = false; }
+  }
+  const streak = computeWeeklyStreak(dates, goal, key);
+  const streakEl = $(ids.streak);
+  if(streakEl){
+    streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
+    streakEl.classList.toggle('zero', streak===0);
+  }
+  renderFreezeRow(key, ids.freezeInfo, ids.freezeBtn);
+  if(doneThisWeek.length >= goal){
+    const ck = `week:${key}:${weekStart}:${goal}`;
+    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`); }
+  }
+  updateBadgeCount();
+}
+function logToday(key, ids){
+  const dates = load(key, []);
+  if(!dates.includes(todayISO())){
+    dates.push(todayISO());
+    save(key, dates);
+    renderWeeklyTracker(key, ids);
+    checkBadges();
+  }
+}
+const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen', freezeInfo:'runFreezeInfo', freezeBtn:'runFreezeBtn' };
+const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind', freezeInfo:'fitnessFreezeInfo', freezeBtn:'fitnessFreezeBtn' };
+const logRunBtnEl = $('logRunBtn'); if(logRunBtnEl) logRunBtnEl.addEventListener('click', ()=>logToday('runs', runIds));
+const logFitnessBtnEl = $('logFitnessBtn'); if(logFitnessBtnEl) logFitnessBtnEl.addEventListener('click', ()=>logToday('fitness', fitnessIds));
+const runFreezeBtnEl = $('runFreezeBtn');
+if(runFreezeBtnEl) runFreezeBtnEl.addEventListener('click', ()=>{
+  useWeeklyFreeze('runs', getGoal('runs'), load('runs', []), ()=>{ renderWeeklyTracker('runs', runIds); checkBadges(); });
+});
+const fitnessFreezeBtnEl = $('fitnessFreezeBtn');
+if(fitnessFreezeBtnEl) fitnessFreezeBtnEl.addEventListener('click', ()=>{
+  useWeeklyFreeze('fitness', getGoal('fitness'), load('fitness', []), ()=>{ renderWeeklyTracker('fitness', fitnessIds); checkBadges(); });
+});
+renderWeeklyTracker('runs', runIds);
+renderWeeklyTracker('fitness', fitnessIds);
+
+/* ============ Push-ups (instelbaar dagdoel) ============ */
 function renderPushups(){
   const goal = getGoal('pushups');
   const all = load('pushups', {});
@@ -1011,7 +1077,7 @@ function renderPushups(){
 }
 const pushFreezeBtnEl = $('pushFreezeBtn');
 if(pushFreezeBtnEl) pushFreezeBtnEl.addEventListener('click', ()=>{
-  useFreeze('pushups', getGoal('pushups'), load('pushups', {}), ()=>{ renderPushups(); checkBadges(); });
+  useDailyFreeze('pushups', getGoal('pushups'), load('pushups', {}), ()=>{ renderPushups(); checkBadges(); });
 });
 function addPushup(n=1){
   const all = load('pushups', {});
@@ -1111,23 +1177,18 @@ function renderWater(){
   const count = all[todayISO()] || 0;
   setHTML('waterCount', `${formatLiters(count)}<small>/${formatLiters(goal)} L</small>`);
   const bar = $('waterProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
-  const streak = computeDailyStreak(all, goal, 'water');
+  const streak = computeDailyStreak(all, goal);
   const streakEl = $('waterStreak');
   if(streakEl){
     streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
     streakEl.classList.toggle('zero', streak===0);
   }
-  renderFreezeRow('water', 'waterFreezeInfo', 'waterFreezeBtn');
   if(count >= goal){
     const ck = `water:${todayISO()}:${goal}`;
     if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('💧 Waterdoel gehaald!'); }
   }
   updateBadgeCount();
 }
-const waterFreezeBtnEl = $('waterFreezeBtn');
-if(waterFreezeBtnEl) waterFreezeBtnEl.addEventListener('click', ()=>{
-  useFreeze('water', getGoal('water'), load('water', {}), ()=>{ renderWater(); checkBadges(); });
-});
 function addWater(delta){
   const all = load('water', {});
   let v = Math.round(((all[todayISO()]||0) + delta) * 10) / 10; // afronden voorkomt float-afrondingsfouten (0.1+0.2 etc.)
