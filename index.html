@@ -87,6 +87,16 @@
     font-size:12px; padding:9px 4px; border-radius:9px; width:auto;}
   .segmented button.active{background:var(--signal); color:#1a0d05;}
 
+  .goal-row{display:flex; align-items:center; justify-content:space-between; background:var(--bg);
+    border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:16px;}
+  .goal-label{font-size:12.5px; color:var(--chalk-dim);}
+  .goal-stepper{display:flex; align-items:center; gap:12px;}
+  .step-btn{width:30px; height:30px; padding:0; border-radius:50%; background:var(--bg-2);
+    border:1px solid var(--line); color:var(--chalk); font-size:16px; line-height:1; display:flex;
+    align-items:center; justify-content:center;}
+  .step-btn:active{transform:scale(.92);}
+  .goal-val{font-family:'Oswald'; font-size:16px; font-weight:600; min-width:28px; text-align:center;}
+
   .pushup-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:12px;
     overflow:hidden; margin-bottom:16px;}
   video{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1);}
@@ -207,7 +217,15 @@
       <div id="sub-lopen">
         <div class="card">
           <h2>Hardlopen</h2>
-          <p class="sub">Doel: 3x per week. Vink af zodra je geweest bent.</p>
+          <p class="sub">Vink af zodra je geweest bent.</p>
+          <div class="goal-row">
+            <span class="goal-label">Doel per week</span>
+            <div class="goal-stepper">
+              <button class="step-btn" data-goalkey="runs" data-dir="-1">−</button>
+              <span class="goal-val" id="runGoalVal">3</span>
+              <button class="step-btn" data-goalkey="runs" data-dir="1">+</button>
+            </div>
+          </div>
           <div class="streak" id="runStreak">🔥 0 weken streak</div>
           <div class="weekrow" id="weekRow"></div>
           <div class="bignum" id="runCount">0<small>/3 deze week</small></div>
@@ -220,7 +238,15 @@
       <div id="sub-fitness" class="hidden">
         <div class="card">
           <h2>Fitness</h2>
-          <p class="sub">Doel: 3x per week krachttraining. Vink af zodra je getraind hebt.</p>
+          <p class="sub">Vink af zodra je getraind hebt.</p>
+          <div class="goal-row">
+            <span class="goal-label">Doel per week</span>
+            <div class="goal-stepper">
+              <button class="step-btn" data-goalkey="fitness" data-dir="-1">−</button>
+              <span class="goal-val" id="fitnessGoalVal">3</span>
+              <button class="step-btn" data-goalkey="fitness" data-dir="1">+</button>
+            </div>
+          </div>
           <div class="streak" id="fitnessStreak">🔥 0 weken streak</div>
           <div class="weekrow" id="weekRowFitness"></div>
           <div class="bignum" id="fitnessCount">0<small>/3 deze week</small></div>
@@ -233,7 +259,15 @@
       <div id="sub-pushups" class="hidden">
         <div class="card">
           <h2>Push-ups</h2>
-          <p class="sub">Doel: 100 per dag. Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is.</p>
+          <p class="sub">Zet je telefoon rechtop tegen iets aan zodat je bovenlichaam in beeld is.</p>
+          <div class="goal-row">
+            <span class="goal-label">Doel per dag</span>
+            <div class="goal-stepper">
+              <button class="step-btn" data-goalkey="pushups" data-dir="-1">−</button>
+              <span class="goal-val" id="pushupsGoalVal">100</span>
+              <button class="step-btn" data-goalkey="pushups" data-dir="1">+</button>
+            </div>
+          </div>
           <div class="streak" id="pushStreak">🔥 0 dagen streak</div>
 
           <div class="pushup-wrap">
@@ -250,7 +284,7 @@
           <button class="btn-ghost" id="manualBtn">+1 handmatig toevoegen</button>
 
           <div class="progress"><i id="pushProgress" style="width:0%"></i></div>
-          <div class="progress-label"><span id="pushToday">0</span><span>doel: 100</span></div>
+          <div class="progress-label"><span id="pushToday">0</span><span id="pushGoalLabel">doel: 100</span></div>
           <p class="note" id="pushNote">De teller kalibreert zichzelf op je eigen op-en-neer beweging. Klopt het niet helemaal? Gebruik de handmatige knop.</p>
         </div>
       </div>
@@ -260,7 +294,14 @@
     <section id="tab-water" class="hidden">
       <div class="card">
         <h2>Water drinken</h2>
-        <p class="sub">Doel: 8 glazen per dag.</p>
+        <div class="goal-row">
+          <span class="goal-label">Doel per dag</span>
+          <div class="goal-stepper">
+            <button class="step-btn" data-goalkey="water" data-dir="-1">−</button>
+            <span class="goal-val" id="waterGoalVal">8</span>
+            <button class="step-btn" data-goalkey="water" data-dir="1">+</button>
+          </div>
+        </div>
         <div class="streak" id="waterStreak">🔥 0 dagen streak</div>
         <div class="bignum" id="waterCount">0<small>/8 glazen</small></div>
         <div class="progress"><i id="waterProgress" style="width:0%"></i></div>
@@ -315,7 +356,7 @@
         </div>
         <div id="monthChart"></div>
         <div class="chart-legend">
-          <span><i style="background:var(--lane)"></i> 100+ push-ups</span>
+          <span><i style="background:var(--lane)"></i> doel gehaald</span>
           <span><i style="background:var(--sage)"></i> minder</span>
           <span><i style="background:var(--signal)"></i> gelopen</span>
           <span><i style="background:var(--chalk)"></i> fitness</span>
@@ -344,19 +385,53 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
 
 <script>
-/* ============ Helpers ============ */
+/* ============ Basis helpers (null-veilig: nooit crashen op een ontbrekend element) ============ */
 const todayISO = () => new Date().toISOString().slice(0,10);
-const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) ?? fallback; } catch { return fallback; } };
+const load = (k, fallback) => { try { const v = JSON.parse(localStorage.getItem(k)); return (v===null||v===undefined) ? fallback : v; } catch { return fallback; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const $ = (id) => document.getElementById(id);
+function setText(id, text){ const el = $(id); if(el) el.textContent = text; }
+function setHTML(id, html){ const el = $(id); if(el) el.innerHTML = html; }
 function seededIndex(str, mod){
   let hash=0;
   for(let i=0;i<str.length;i++){ hash = (hash*31 + str.charCodeAt(i)) % 100000; }
   return hash % mod;
 }
 
+/* ============ Instelbare doelen (per persoon aan te passen, lokaal opgeslagen) ============ */
+const GOAL_DEFAULTS = { runs:3, fitness:3, pushups:100, water:8 };
+const GOAL_LIMITS = { runs:[1,7,1], fitness:[1,7,1], pushups:[10,300,10], water:[1,15,1] };
+function getGoal(key){
+  const v = load('goal_'+key, null);
+  return (typeof v === 'number' && v>0) ? v : GOAL_DEFAULTS[key];
+}
+function setGoal(key, val){ save('goal_'+key, val); }
+function refreshGoalDisplays(){
+  setText('runGoalVal', getGoal('runs'));
+  setText('fitnessGoalVal', getGoal('fitness'));
+  setText('pushupsGoalVal', getGoal('pushups'));
+  setText('waterGoalVal', getGoal('water'));
+}
+document.querySelectorAll('.step-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const key = btn.dataset.goalkey;
+    const dir = Number(btn.dataset.dir);
+    const [min,max,step] = GOAL_LIMITS[key];
+    let val = getGoal(key) + dir*step;
+    if(val<min) val=min; if(val>max) val=max;
+    setGoal(key, val);
+    refreshGoalDisplays();
+    if(key==='runs') renderWeeklyTracker('runs', runIds);
+    if(key==='fitness') renderWeeklyTracker('fitness', fitnessIds);
+    if(key==='pushups') renderPushups();
+    if(key==='water') renderWater();
+  });
+});
+
 /* ============ Motiverende feedback ============ */
 function showToast(msg){
-  const el = document.getElementById('toast');
+  const el = $('toast');
+  if(!el) return;
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(showToast._t);
@@ -364,7 +439,8 @@ function showToast(msg){
 }
 function confettiBurst(){
   const emojis = ['🎉','🔥','💪','⭐','✅'];
-  const container = document.getElementById('celebrate');
+  const container = $('celebrate');
+  if(!container) return;
   for(let i=0;i<24;i++){
     const s = document.createElement('span');
     s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
@@ -388,82 +464,39 @@ function updateBadgeCount(){
   let outstanding = 0;
   if(!runs.includes(todayISO())) outstanding++;
   if(!fitness.includes(todayISO())) outstanding++;
-  if((pushups[todayISO()]||0) < 100) outstanding++;
-  if((water[todayISO()]||0) < 8) outstanding++;
+  if((pushups[todayISO()]||0) < getGoal('pushups')) outstanding++;
+  if((water[todayISO()]||0) < getGoal('water')) outstanding++;
   try{ outstanding>0 ? navigator.setAppBadge(outstanding) : navigator.clearAppBadge(); }catch(e){}
 }
 
 /* ============ Profiel ============ */
 function initProfile(){
-  const onboarding = document.getElementById('onboarding');
-  const name = load('profileName', '');
-
-  if(!onboarding) {
-    console.error('Fout: #onboarding bestaat niet.');
-    return;
-  }
-
-  if(!name){
-    onboarding.classList.remove('hidden');
-  } else {
-    onboarding.classList.add('hidden');
-    updateGreeting(name);
-  }
+  const name = load('profileName', null);
+  const onboarding = $('onboarding');
+  if(!name){ if(onboarding) onboarding.classList.remove('hidden'); }
+  else { updateGreeting(name); }
 }
-
 function updateGreeting(name){
-  const eyebrow = document.getElementById('eyebrowText');
-
-  if(!eyebrow){
-    console.error('Fout: #eyebrowText bestaat niet.');
-    return;
-  }
-
   let start = load('startDate', null);
-  if(!start){
-    start = todayISO();
-    save('startDate', start);
-  }
-
+  if(!start){ start = todayISO(); save('startDate', start); }
   const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
-
-  eyebrow.textContent = name
-    ? `Hey ${name} · dag ${days}`
-    : `Dag ${days} · blijf bewegen`;
+  // dag-teller wordt hier binnen dezelfde HTML meegegeven i.p.v. als apart element
+  // dat door een latere innerHTML-update per ongeluk verwijderd kon worden.
+  setHTML('eyebrowText', name
+    ? `Hey ${name} · dag <span id="streakDay">${days}</span>`
+    : `Dag <span id="streakDay">${days}</span> · blijf bewegen`);
 }
-
-const nameSubmit = document.getElementById('nameSubmit');
-const nameInput = document.getElementById('nameInput');
-
-if(nameSubmit && nameInput){
-  function saveName(){
-    const val = nameInput.value.trim();
-
-    if(!val){
-      nameInput.focus();
-      return;
-    }
-
-    save('profileName', val);
-
-    const onboarding = document.getElementById('onboarding');
-    if(onboarding){
-      onboarding.classList.add('hidden');
-    }
-
-    updateGreeting(val);
-  }
-
-  nameSubmit.addEventListener('click', saveName);
-
-  nameInput.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      saveName();
-    }
-  });
-}
-
+const nameSubmitBtn = $('nameSubmit');
+if(nameSubmitBtn) nameSubmitBtn.addEventListener('click', ()=>{
+  const input = $('nameInput');
+  const val = input ? input.value.trim() : '';
+  save('profileName', val || 'jij');
+  const onboarding = $('onboarding');
+  if(onboarding) onboarding.classList.add('hidden');
+  updateGreeting(val || null);
+});
+const nameInputEl = $('nameInput');
+if(nameInputEl) nameInputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && nameSubmitBtn) nameSubmitBtn.click(); });
 initProfile();
 
 /* ============ Dagelijkse quote ============ */
@@ -479,7 +512,7 @@ const QUOTES = [
   "Discipline is jezelf herinneren wat je wilt.",
   "Vooruitgang, geen perfectie."
 ];
-document.getElementById('quoteText').textContent = QUOTES[seededIndex(todayISO()+'-q', QUOTES.length)];
+setText('quoteText', QUOTES[seededIndex(todayISO()+'-q', QUOTES.length)]);
 
 /* ============ Uitdaging van de dag ============ */
 const CHALLENGE_POOL = [
@@ -494,13 +527,15 @@ const CHALLENGE_POOL = [
 ];
 function todaysChallenge(){ return CHALLENGE_POOL[seededIndex(todayISO()+'-c', CHALLENGE_POOL.length)]; }
 function renderChallenge(){
-  document.getElementById('challengeText').textContent = todaysChallenge();
+  setText('challengeText', todaysChallenge());
   const done = load('challenges', {});
-  const btn = document.getElementById('challengeBtn');
+  const btn = $('challengeBtn');
+  if(!btn) return;
   if(done[todayISO()]){ btn.textContent = 'Voltooid vandaag ✓'; btn.disabled = true; }
   else { btn.textContent = 'Voltooid ✓'; btn.disabled = false; }
 }
-document.getElementById('challengeBtn').addEventListener('click', ()=>{
+const challengeBtnEl = $('challengeBtn');
+if(challengeBtnEl) challengeBtnEl.addEventListener('click', ()=>{
   const done = load('challenges', {});
   done[todayISO()] = true;
   save('challenges', done);
@@ -516,27 +551,23 @@ document.querySelectorAll('nav .tab').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    TABS.forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden', btn.dataset.tab!==t));
+    TABS.forEach(t=>{ const el=$('tab-'+t); if(el) el.classList.toggle('hidden', btn.dataset.tab!==t); });
     if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); checkBadges(); }
     if(btn.dataset.tab === 'fotos'){ renderPhotoGallery(); }
     if(btn.dataset.tab === 'water'){ renderWater(); }
     if(btn.dataset.tab === 'gewicht'){ renderWeight(); }
   });
 });
-
-/* segmented control binnen Bewegen-tab */
 document.querySelectorAll('#moveSegment button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#moveSegment button').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    ['lopen','fitness','pushups'].forEach(s=>{
-      document.getElementById('sub-'+s).classList.toggle('hidden', btn.dataset.sub!==s);
-    });
+    ['lopen','fitness','pushups'].forEach(s=>{ const el=$('sub-'+s); if(el) el.classList.toggle('hidden', btn.dataset.sub!==s); });
     if(btn.dataset.sub !== 'pushups') stopCamera();
   });
 });
 
-/* ============ Hardlopen & Fitness (3x per week) ============ */
+/* ============ Hardlopen & Fitness (instelbaar aantal keer per week) ============ */
 function mondayOfWeek(d){
   const date = new Date(d);
   const day = (date.getDay() + 6) % 7;
@@ -570,7 +601,8 @@ function computeBestWeeklyStreak(dates, goal){
   }
   return best;
 }
-function renderWeeklyTracker(key, goal, ids){
+function renderWeeklyTracker(key, ids){
+  const goal = getGoal(key);
   const dates = load(key, []);
   const weekStart = mondayOfWeek(todayISO());
   const weekDays = [...Array(7)].map((_,i)=>{
@@ -578,45 +610,47 @@ function renderWeeklyTracker(key, goal, ids){
     return d.toISOString().slice(0,10);
   });
   const doneThisWeek = weekDays.filter(d => dates.includes(d));
-  const row = document.getElementById(ids.row);
   const labels = ['M','D','W','D','V','Z','Z'];
-  row.innerHTML = weekDays.map((d,i)=>`
+  setHTML(ids.row, weekDays.map((d,i)=>`
     <div class="day ${dates.includes(d)?'done':''}">
       <div class="dot">${dates.includes(d)?'✓':''}</div>
       <div class="label">${labels[i]}</div>
-    </div>`).join('');
-  document.getElementById(ids.count).innerHTML = `${doneThisWeek.length}<small>/${goal} deze week</small>`;
-  const btn = document.getElementById(ids.btn);
-  if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
-  else { btn.textContent = ids.actionLabel; btn.disabled = false; }
+    </div>`).join(''));
+  setHTML(ids.count, `${doneThisWeek.length}<small>/${goal} deze week</small>`);
+  const btn = $(ids.btn);
+  if(btn){
+    if(dates.includes(todayISO())){ btn.textContent = ids.doneLabel; btn.disabled = true; }
+    else { btn.textContent = ids.actionLabel; btn.disabled = false; }
+  }
   const streak = computeWeeklyStreak(dates, goal);
-  const streakEl = document.getElementById(ids.streak);
-  streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
-  streakEl.classList.toggle('zero', streak===0);
+  const streakEl = $(ids.streak);
+  if(streakEl){
+    streakEl.textContent = `🔥 ${streak} ${streak===1?'week':'weken'} streak`;
+    streakEl.classList.toggle('zero', streak===0);
+  }
   if(doneThisWeek.length >= goal){
-    const ck = `week:${key}:${weekStart}`;
+    const ck = `week:${key}:${weekStart}:${goal}`;
     if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`💥 Weekdoel gehaald — ${goal}/${goal}!`); }
   }
   updateBadgeCount();
 }
-function logToday(key, goal, ids){
+function logToday(key, ids){
   const dates = load(key, []);
   if(!dates.includes(todayISO())){
     dates.push(todayISO());
     save(key, dates);
-    renderWeeklyTracker(key, goal, ids);
+    renderWeeklyTracker(key, ids);
     checkBadges();
   }
 }
 const runIds = { row:'weekRow', count:'runCount', btn:'logRunBtn', streak:'runStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag gelopen' };
 const fitnessIds = { row:'weekRowFitness', count:'fitnessCount', btn:'logFitnessBtn', streak:'fitnessStreak', doneLabel:'Vandaag al gelogd ✓', actionLabel:'Ik heb vandaag getraind' };
-document.getElementById('logRunBtn').addEventListener('click', ()=>logToday('runs', 3, runIds));
-document.getElementById('logFitnessBtn').addEventListener('click', ()=>logToday('fitness', 3, fitnessIds));
-renderWeeklyTracker('runs', 3, runIds);
-renderWeeklyTracker('fitness', 3, fitnessIds);
+const logRunBtnEl = $('logRunBtn'); if(logRunBtnEl) logRunBtnEl.addEventListener('click', ()=>logToday('runs', runIds));
+const logFitnessBtnEl = $('logFitnessBtn'); if(logFitnessBtnEl) logFitnessBtnEl.addEventListener('click', ()=>logToday('fitness', fitnessIds));
+renderWeeklyTracker('runs', runIds);
+renderWeeklyTracker('fitness', fitnessIds);
 
-/* ============ Push-ups ============ */
-const PUSHUP_GOAL = 100;
+/* ============ Push-ups (instelbaar dagdoel) ============ */
 function computeDailyStreak(countsObj, goal){
   const oneDay = 86400000;
   let cursor = new Date(todayISO());
@@ -642,18 +676,22 @@ function computeBestDailyStreak(countsObj, goal){
   return best;
 }
 function renderPushups(){
+  const goal = getGoal('pushups');
   const all = load('pushups', {});
   const count = all[todayISO()] || 0;
-  document.getElementById('pushToday').textContent = count;
-  document.getElementById('liveCount').textContent = count;
-  document.getElementById('pushProgress').style.width = Math.min(100, (count/PUSHUP_GOAL)*100) + '%';
-  const streak = computeDailyStreak(all, PUSHUP_GOAL);
-  const streakEl = document.getElementById('pushStreak');
-  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
-  streakEl.classList.toggle('zero', streak===0);
-  if(count >= PUSHUP_GOAL){
-    const ck = `push:${todayISO()}`;
-    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('🏆 100 push-ups gehaald vandaag!'); }
+  setText('pushToday', count);
+  setText('liveCount', count);
+  setText('pushGoalLabel', `doel: ${goal}`);
+  const bar = $('pushProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
+  const streak = computeDailyStreak(all, goal);
+  const streakEl = $('pushStreak');
+  if(streakEl){
+    streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+    streakEl.classList.toggle('zero', streak===0);
+  }
+  if(count >= goal){
+    const ck = `push:${todayISO()}:${goal}`;
+    if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`🏆 Push-up doel gehaald: ${goal}!`); }
   }
   updateBadgeCount();
 }
@@ -664,15 +702,15 @@ function addPushup(n=1){
   renderPushups();
   checkBadges();
 }
-document.getElementById('manualBtn').addEventListener('click', ()=>addPushup(1));
+const manualBtnEl = $('manualBtn'); if(manualBtnEl) manualBtnEl.addEventListener('click', ()=>addPushup(1));
 renderPushups();
 
 let detector = null, running = false, stream = null, poseState = 'up', lastRepTime = 0;
-const video = document.getElementById('video');
-const canvas = document.getElementById('overlay');
-const ctx = canvas.getContext('2d');
-const camBtn = document.getElementById('camBtn');
-const statusEl = document.getElementById('camStatus');
+const video = $('video');
+const canvas = $('overlay');
+const ctx = canvas ? canvas.getContext('2d') : null;
+const camBtn = $('camBtn');
+const statusEl = $('camStatus');
 
 async function initDetector(){
   await tf.setBackend('webgl');
@@ -682,8 +720,8 @@ async function initDetector(){
   });
 }
 async function startCamera(){
-  statusEl.textContent = 'model laden…';
-  camBtn.disabled = true;
+  if(statusEl) statusEl.textContent = 'model laden…';
+  if(camBtn) camBtn.disabled = true;
   try{
     if(!detector) await initDetector();
     stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user' }, audio:false });
@@ -692,24 +730,23 @@ async function startCamera(){
     canvas.width = video.videoWidth || 480;
     canvas.height = video.videoHeight || 640;
     running = true;
-    statusEl.textContent = 'volgt beweging';
-    camBtn.textContent = 'Stop camera';
-    camBtn.disabled = false;
+    if(statusEl) statusEl.textContent = 'volgt beweging';
+    if(camBtn){ camBtn.textContent = 'Stop camera'; camBtn.disabled = false; }
     detectLoop();
   }catch(e){
-    statusEl.textContent = 'camera geweigerd';
-    camBtn.disabled = false;
-    document.getElementById('pushNote').textContent = 'Kon geen camera-toegang krijgen. Check Instellingen > Safari > Camera, of gebruik de handmatige knop.';
+    if(statusEl) statusEl.textContent = 'camera geweigerd';
+    if(camBtn) camBtn.disabled = false;
+    setText('pushNote', 'Kon geen camera-toegang krijgen. Check Instellingen > Safari > Camera, of gebruik de handmatige knop.');
   }
 }
 function stopCamera(){
   running = false;
   if(stream) stream.getTracks().forEach(t=>t.stop());
-  statusEl.textContent = 'camera uit';
-  camBtn.textContent = 'Start camera & tel mee';
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(statusEl) statusEl.textContent = 'camera uit';
+  if(camBtn) camBtn.textContent = 'Start camera & tel mee';
+  if(ctx) ctx.clearRect(0,0,canvas.width,canvas.height);
 }
-camBtn.addEventListener('click', ()=>{ running ? stopCamera() : startCamera(); });
+if(camBtn) camBtn.addEventListener('click', ()=>{ running ? stopCamera() : startCamera(); });
 
 let smoothBuf = [], motionBuf = [];
 const MOTION_WINDOW_MS = 4000, MIN_RANGE = 0.035, REP_DEBOUNCE_MS = 300;
@@ -749,19 +786,21 @@ async function detectLoop(){
   if(running) requestAnimationFrame(detectLoop);
 }
 
-/* ============ Water ============ */
-const WATER_GOAL = 8;
+/* ============ Water (instelbaar dagdoel) ============ */
 function renderWater(){
+  const goal = getGoal('water');
   const all = load('water', {});
   const count = all[todayISO()] || 0;
-  document.getElementById('waterCount').innerHTML = `${count}<small>/${WATER_GOAL} glazen</small>`;
-  document.getElementById('waterProgress').style.width = Math.min(100, (count/WATER_GOAL)*100) + '%';
-  const streak = computeDailyStreak(all, WATER_GOAL);
-  const streakEl = document.getElementById('waterStreak');
-  streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
-  streakEl.classList.toggle('zero', streak===0);
-  if(count >= WATER_GOAL){
-    const ck = `water:${todayISO()}`;
+  setHTML('waterCount', `${count}<small>/${goal} glazen</small>`);
+  const bar = $('waterProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
+  const streak = computeDailyStreak(all, goal);
+  const streakEl = $('waterStreak');
+  if(streakEl){
+    streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
+    streakEl.classList.toggle('zero', streak===0);
+  }
+  if(count >= goal){
+    const ck = `water:${todayISO()}:${goal}`;
     if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('💧 Waterdoel gehaald!'); }
   }
   updateBadgeCount();
@@ -775,14 +814,14 @@ function addWater(delta){
   renderWater();
   checkBadges();
 }
-document.getElementById('waterPlus').addEventListener('click', ()=>addWater(1));
-document.getElementById('waterMinus').addEventListener('click', ()=>addWater(-1));
+const waterPlusEl = $('waterPlus'); if(waterPlusEl) waterPlusEl.addEventListener('click', ()=>addWater(1));
+const waterMinusEl = $('waterMinus'); if(waterMinusEl) waterMinusEl.addEventListener('click', ()=>addWater(-1));
 
 /* ============ Gewicht ============ */
 function renderWeight(){
   const all = load('weight', {});
   const todayVal = all[todayISO()];
-  document.getElementById('weightInput').value = todayVal || '';
+  const input = $('weightInput'); if(input) input.value = todayVal || '';
   const entries = Object.entries(all).sort((a,b)=>a[0]<b[0]?-1:1);
   const last12 = entries.slice(-12);
   if(last12.length >= 2){
@@ -796,21 +835,23 @@ function renderWeight(){
       const y = pad + (1-(e[1]-min)/range)*(h-pad*2);
       return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
-    document.getElementById('weightChart').innerHTML = `
+    setHTML('weightChart', `
       <svg viewBox="0 0 ${w} ${h}" style="width:100%; height:100px;">
         <polyline points="${pts}" fill="none" stroke="#e8c547" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>`;
+      </svg>`);
   } else {
-    document.getElementById('weightChart').innerHTML = `<p class="note">Log minstens 2 metingen om een grafiek te zien.</p>`;
+    setHTML('weightChart', `<p class="note">Log minstens 2 metingen om een grafiek te zien.</p>`);
   }
   const listEntries = entries.slice().reverse().slice(0,10);
-  document.getElementById('weightList').innerHTML = listEntries.map(([d,v])=>{
+  setHTML('weightList', listEntries.map(([d,v])=>{
     const label = new Date(d).toLocaleDateString('nl-NL', {day:'numeric', month:'short'});
     return `<div class="weight-row"><span class="d">${label}</span><span class="v">${v} kg</span></div>`;
-  }).join('') || '<p class="note">Nog geen metingen gelogd.</p>';
+  }).join('') || '<p class="note">Nog geen metingen gelogd.</p>');
 }
-document.getElementById('weightSave').addEventListener('click', ()=>{
-  const val = parseFloat(document.getElementById('weightInput').value);
+const weightSaveEl = $('weightSave');
+if(weightSaveEl) weightSaveEl.addEventListener('click', ()=>{
+  const input = $('weightInput');
+  const val = input ? parseFloat(input.value) : NaN;
   if(isNaN(val) || val<=0){ showToast('Vul een geldig gewicht in'); return; }
   const all = load('weight', {});
   const isFirst = Object.keys(all).length === 0;
@@ -825,6 +866,7 @@ document.getElementById('weightSave').addEventListener('click', ()=>{
 const DB_NAME='mAppDB', DB_VERSION=1, PHOTO_STORE='photos';
 function openPhotoDB(){
   return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)){ reject(new Error('IndexedDB niet beschikbaar')); return; }
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (e)=>{
       const db = e.target.result;
@@ -866,8 +908,10 @@ async function deletePhoto(id){
     tx.onerror = ()=>reject(tx.error);
   });
 }
-document.getElementById('addPhotoBtn').addEventListener('click', ()=>document.getElementById('photoInput').click());
-document.getElementById('photoInput').addEventListener('change', (e)=>{
+const addPhotoBtnEl = $('addPhotoBtn');
+if(addPhotoBtnEl) addPhotoBtnEl.addEventListener('click', ()=>{ const inp = $('photoInput'); if(inp) inp.click(); });
+const photoInputEl = $('photoInput');
+if(photoInputEl) photoInputEl.addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -897,7 +941,8 @@ document.getElementById('photoInput').addEventListener('change', (e)=>{
 });
 async function renderPhotoGallery(){
   const photos = await getAllPhotos();
-  const container = document.getElementById('photoGallery');
+  const container = $('photoGallery');
+  if(!container) return;
   if(photos.length === 0){ container.innerHTML = '<p class="note">Nog geen foto\'s toegevoegd.</p>'; return; }
   const byDate = {};
   photos.forEach(p=>{ (byDate[p.date] = byDate[p.date]||[]).push(p); });
@@ -911,12 +956,13 @@ async function renderPhotoGallery(){
     el.addEventListener('click', ()=>{
       const id = Number(el.dataset.id);
       const p = photos.find(ph=>ph.id===id);
-      openLightbox(p);
+      if(p) openLightbox(p);
     });
   });
 }
 function openLightbox(photo){
-  const lb = document.getElementById('lightbox');
+  const lb = $('lightbox');
+  if(!lb) return;
   const label = new Date(photo.date).toLocaleDateString('nl-NL', {weekday:'long', day:'numeric', month:'long'});
   lb.innerHTML = `
     <img src="${photo.dataUrl}">
@@ -926,8 +972,9 @@ function openLightbox(photo){
       <button class="btn-primary" id="lbDelete">Verwijderen</button>
     </div>`;
   lb.classList.remove('hidden');
-  document.getElementById('lbClose').addEventListener('click', ()=>lb.classList.add('hidden'));
-  document.getElementById('lbDelete').addEventListener('click', async ()=>{
+  const closeBtn = $('lbClose'); if(closeBtn) closeBtn.addEventListener('click', ()=>lb.classList.add('hidden'));
+  const delBtn = $('lbDelete');
+  if(delBtn) delBtn.addEventListener('click', async ()=>{
     await deletePhoto(photo.id);
     lb.classList.add('hidden');
     renderPhotoGallery();
@@ -940,18 +987,18 @@ function renderOverzicht(){
   const fitness = load('fitness', []);
   const pushups = load('pushups', {});
   const totalPushups = Object.values(pushups).reduce((a,b)=>a+b,0);
-  const daysGoalHit = Object.values(pushups).filter(v=>v>=PUSHUP_GOAL).length;
+  const daysGoalHit = Object.values(pushups).filter(v=>v>=getGoal('pushups')).length;
 
-  document.getElementById('statGrid').innerHTML = `
+  setHTML('statGrid', `
     <div class="stat"><div class="num">${runs.length}</div><div class="lbl">keer gelopen</div></div>
     <div class="stat"><div class="num">${fitness.length}</div><div class="lbl">keer getraind</div></div>
     <div class="stat"><div class="num">${totalPushups}</div><div class="lbl">push-ups totaal</div></div>
-    <div class="stat"><div class="num">${daysGoalHit}</div><div class="lbl">dagen 100 gehaald</div></div>`;
+    <div class="stat"><div class="num">${daysGoalHit}</div><div class="lbl">dagen doel gehaald</div></div>`);
 
-  document.getElementById('bestGrid').innerHTML = `
-    <div class="stat"><div class="num">${computeBestWeeklyStreak(runs,3)}</div><div class="lbl">beste loop-streak (wkn)</div></div>
-    <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness,3)}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
-    <div class="stat"><div class="num">${computeBestDailyStreak(pushups,PUSHUP_GOAL)}</div><div class="lbl">beste push-up streak (dgn)</div></div>`;
+  setHTML('bestGrid', `
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(runs, getGoal('runs'))}</div><div class="lbl">beste loop-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness, getGoal('fitness'))}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
+    <div class="stat"><div class="num">${computeBestDailyStreak(pushups, getGoal('pushups'))}</div><div class="lbl">beste push-up streak (dgn)</div></div>`);
 }
 
 let monthOffset = 0;
@@ -959,15 +1006,16 @@ function renderMonthChart(){
   const base = new Date(); base.setDate(1); base.setMonth(base.getMonth()+monthOffset);
   const year = base.getFullYear(), month = base.getMonth();
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  document.getElementById('monthLabel').textContent = base.toLocaleDateString('nl-NL', {month:'long', year:'numeric'});
-  document.getElementById('monthNext').disabled = (monthOffset >= 0);
+  setText('monthLabel', base.toLocaleDateString('nl-NL', {month:'long', year:'numeric'}));
+  const nextBtn = $('monthNext'); if(nextBtn) nextBtn.disabled = (monthOffset >= 0);
 
   const pushups = load('pushups', {});
   const runs = load('runs', []);
   const fitness = load('fitness', []);
+  const pushGoal = getGoal('pushups');
 
   const barSlot=16, barW=9, chartH=90;
-  let maxVal = 100;
+  let maxVal = pushGoal;
   for(let i=0;i<daysInMonth;i++){
     const key = `${year}-${String(month+1).padStart(2,'0')}-${String(i+1).padStart(2,'0')}`;
     maxVal = Math.max(maxVal, pushups[key]||0);
@@ -979,18 +1027,17 @@ function renderMonthChart(){
     const val = pushups[key]||0;
     const h = Math.max(Math.round((val/maxVal)*chartH), val>0?2:0);
     const x = i*barSlot+4, y = chartH-h;
-    const color = val>=100 ? '#e8c547' : (val>0 ? '#5b7a6b' : 'rgba(243,239,230,0.08)');
+    const color = val>=pushGoal ? '#e8c547' : (val>0 ? '#5b7a6b' : 'rgba(243,239,230,0.08)');
     bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="2" fill="${color}"/>`;
     const ry = chartH+10;
     if(runs.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry}" r="2.6" fill="#ff5a2b"/>`;
     if(fitness.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry+7}" r="2.6" fill="#f3efe6"/>`;
   }
   const totalWidth = daysInMonth*barSlot+8;
-  document.getElementById('monthChart').innerHTML = `
-    <svg viewBox="0 0 ${totalWidth} ${chartH+22}" style="width:100%; height:150px;">${bars}${dots}</svg>`;
+  setHTML('monthChart', `<svg viewBox="0 0 ${totalWidth} ${chartH+22}" style="width:100%; height:150px;">${bars}${dots}</svg>`);
 }
-document.getElementById('monthPrev').addEventListener('click', ()=>{ monthOffset--; renderMonthChart(); });
-document.getElementById('monthNext').addEventListener('click', ()=>{ if(monthOffset<0){ monthOffset++; renderMonthChart(); } });
+const monthPrevEl = $('monthPrev'); if(monthPrevEl) monthPrevEl.addEventListener('click', ()=>{ monthOffset--; renderMonthChart(); });
+const monthNextEl = $('monthNext'); if(monthNextEl) monthNextEl.addEventListener('click', ()=>{ if(monthOffset<0){ monthOffset++; renderMonthChart(); } });
 
 async function checkBadges(){
   const runs = load('runs', []);
@@ -1007,13 +1054,13 @@ async function checkBadges(){
     {id:'first_run', emoji:'🏃', title:'Eerste stap', desc:'Log je eerste keer lopen', unlocked: runs.length>=1},
     {id:'first_fitness', emoji:'🏋️', title:'Eerste training', desc:'Log je eerste fitness-sessie', unlocked: fitness.length>=1},
     {id:'first_100', emoji:'💯', title:'Eerste honderd', desc:'100 push-ups op één dag', unlocked: Object.values(pushups).some(v=>v>=100)},
-    {id:'run_streak3', emoji:'🔥', title:'Op dreef', desc:'3 weken op rij gelopen', unlocked: computeBestWeeklyStreak(runs,3)>=3},
-    {id:'fitness_streak3', emoji:'⚡', title:'Consistent', desc:'3 weken op rij getraind', unlocked: computeBestWeeklyStreak(fitness,3)>=3},
-    {id:'push_streak7', emoji:'🏆', title:'IJzeren week', desc:'7 dagen op rij 100 push-ups', unlocked: computeBestDailyStreak(pushups,100)>=7},
+    {id:'run_streak3', emoji:'🔥', title:'Op dreef', desc:'3 weken op rij je loopdoel gehaald', unlocked: computeBestWeeklyStreak(runs, getGoal('runs'))>=3},
+    {id:'fitness_streak3', emoji:'⚡', title:'Consistent', desc:'3 weken op rij je fitnessdoel gehaald', unlocked: computeBestWeeklyStreak(fitness, getGoal('fitness'))>=3},
+    {id:'push_streak7', emoji:'🏆', title:'IJzeren week', desc:'7 dagen op rij je push-up doel gehaald', unlocked: computeBestDailyStreak(pushups, getGoal('pushups'))>=7},
     {id:'push_1000', emoji:'💪', title:'Duizend', desc:'1000 push-ups totaal', unlocked: totalPushups>=1000},
     {id:'first_photo', emoji:'📷', title:'Vastgelegd', desc:'Voeg je eerste foto toe', unlocked: photos.length>=1},
     {id:'first_weight', emoji:'⚖️', title:'Op de weegschaal', desc:'Log je eerste gewicht', unlocked: Object.keys(weight).length>=1},
-    {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel', unlocked: computeBestDailyStreak(water,8)>=7},
+    {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel gehaald', unlocked: computeBestDailyStreak(water, getGoal('water'))>=7},
     {id:'first_challenge', emoji:'🎯', title:'Uitdager', desc:'Voltooi een dagelijkse uitdaging', unlocked: Object.keys(challenges).length>=1},
     {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1},
   ];
@@ -1027,7 +1074,7 @@ async function checkBadges(){
     save('unlockedBadges', unlockedStore);
     newlyUnlocked.forEach((b,i)=> setTimeout(()=>celebrate(`${b.emoji} Badge verdiend: ${b.title}!`), i*600));
   }
-  const grid = document.getElementById('badgeGrid');
+  const grid = $('badgeGrid');
   if(grid){
     grid.innerHTML = defs.map(b=>{
       const on = !!unlockedStore[b.id];
@@ -1039,6 +1086,9 @@ async function checkBadges(){
     }).join('');
   }
 }
+
+/* ============ Init ============ */
+refreshGoalDisplays();
 checkBadges();
 </script>
 </body>
