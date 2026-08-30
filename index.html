@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>M — dagelijkse targets</title>
+<title>Motivation App — dagelijkse targets</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="M.">
+<meta name="apple-mobile-web-app-title" content="Motivation">
 <meta name="theme-color" content="#12201b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -199,8 +199,8 @@
 
 <div id="app">
   <header>
-    <p class="eyebrow" id="eyebrowText">Dag <span id="streakDay">—</span> · blijf bewegen</p>
-    <h1>M<span>.</span></h1>
+    <p class="eyebrow" id="eyebrowText">Let's move.</p>
+    <h1>MOTIVATION<span>.</span></h1>
     <p class="quote" id="quoteText"></p>
   </header>
 
@@ -209,9 +209,15 @@
     <section id="tab-bewegen">
 
       <div class="card">
-        <h2>Uitdaging van de dag</h2>
+        <h2>Daily challenge</h2>
         <p class="sub" id="challengeText">—</p>
         <button class="btn-primary" id="challengeBtn">Voltooid ✓</button>
+      </div>
+
+      <div class="card">
+        <h2>Weekly challenge</h2>
+        <p class="sub" id="weeklyChallengeText">—</p>
+        <button class="btn-primary" id="weeklyChallengeBtn">Voltooid ✓</button>
       </div>
 
       <div class="card">
@@ -496,14 +502,7 @@ function initProfile(){
   else { updateGreeting(name); }
 }
 function updateGreeting(name){
-  let start = load('startDate', null);
-  if(!start){ start = todayISO(); save('startDate', start); }
-  const days = Math.floor((new Date(todayISO()) - new Date(start)) / 86400000) + 1;
-  // dag-teller wordt hier binnen dezelfde HTML meegegeven i.p.v. als apart element
-  // dat door een latere innerHTML-update per ongeluk verwijderd kon worden.
-  setHTML('eyebrowText', name
-    ? `Hey ${name} · dag <span id="streakDay">${days}</span>`
-    : `Dag <span id="streakDay">${days}</span> · blijf bewegen`);
+  setHTML('eyebrowText', name ? `Hey ${name}` : `Let's move.`);
 }
 const nameSubmitBtn = $('nameSubmit');
 if(nameSubmitBtn) nameSubmitBtn.addEventListener('click', ()=>{
@@ -518,43 +517,72 @@ const nameInputEl = $('nameInput');
 if(nameInputEl) nameInputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && nameSubmitBtn) nameSubmitBtn.click(); });
 initProfile();
 
-/* ============ Dagelijkse quote ============ */
+/* ============ Dagelijkse quote (Engels) ============ */
 const QUOTES = [
-  "Motivatie brengt je op gang, gewoonte houdt je gaande.",
-  "De beste tijd om te beginnen was gisteren. De op één na beste tijd is nu.",
-  "Elke rep telt, ook de moeilijke.",
-  "Consistentie verslaat intensiteit op de lange termijn.",
-  "Je hoeft niet perfect te zijn, je moet gewoon verschijnen.",
-  "Kleine stappen elke dag worden grote resultaten.",
-  "Je lichaam kan bijna alles. Het is je hoofd dat je moet overtuigen.",
-  "Rust als je moe bent, stop niet als je klaar bent.",
-  "Discipline is jezelf herinneren wat je wilt.",
-  "Vooruitgang, geen perfectie."
+  "Motivation gets you started, habit keeps you going.",
+  "The best time to start was yesterday. The next best time is now.",
+  "Every rep counts, especially the hard ones.",
+  "Consistency beats intensity in the long run.",
+  "You don't have to be perfect, you just have to show up.",
+  "Small steps every day turn into big results.",
+  "Your body can do almost anything. It's your mind you have to convince.",
+  "Rest when you're tired, don't stop when you're done.",
+  "Discipline is remembering what you want.",
+  "Progress, not perfection.",
+  "The only bad workout is the one that didn't happen.",
+  "Push yourself, because no one else is going to do it for you."
 ];
 setText('quoteText', QUOTES[seededIndex(todayISO()+'-q', QUOTES.length)]);
 
-/* ============ Uitdaging van de dag ============ */
-const CHALLENGE_POOL = [
-  "Doe 20 extra push-ups bovenop je doel.",
-  "Ga 10 minuten extra wandelen, wanneer het jou uitkomt.",
-  "Drink vandaag 0,5 liter water extra.",
-  "Doe een korte stretch-sessie van 5 minuten voor het slapen.",
-  "Neem vandaag de trap in plaats van de lift, elke keer dat het kan.",
-  "Doe een 'cooldown' van 5 minuten na je training vandaag.",
-  "Zet je telefoon 30 minuten weg na het sporten en rust echt uit.",
-  "Doe 3 sets van 15 squats, verspreid over de dag.",
-  "Probeer vandaag een oefening die je nog nooit hebt gedaan.",
-  "Doe je training vandaag zonder muziek of afleiding — alleen focus.",
-  "Doe 2 minuten planken, in 1 of meerdere keren.",
-  "Doe 10 minuten mobility/rekwerk, los van je training."
+/* ============ Uitdagingen: dagelijks + wekelijks ============ */
+const DAILY_CHALLENGE_POOL = [
+  "Eet vandaag 2 stukken fruit.",
+  "Maak een gezonde smoothie of shake.",
+  "Loop vandaag 2 km meer dan normaal.",
+  "Vervang een snack vandaag door iets gezonds.",
+  "Eet een portie groente extra bij een maaltijd.",
+  "Ga vandaag 15 minuten naar buiten, weer of geen weer.",
+  "Neem vandaag overal de trap in plaats van de lift.",
+  "Kook vanavond iets gezonds dat je nog nooit hebt gemaakt.",
+  "Drink je koffie of thee vandaag zonder suiker.",
+  "Doe 50 extra push-ups verspreid over de dag.",
+  "Eet vandaag geen toegevoegde suiker.",
+  "Zet 20 minuten je telefoon weg en ga bewegen.",
+  "Doe een korte fietstocht in plaats van de auto te pakken.",
+  "Maak een gezond ontbijt in plaats van iets snels te grijpen.",
+  "Doe 3 minuten cardio: jumping jacks of ter plekke rennen."
 ];
-function todaysChallenge(){ return CHALLENGE_POOL[seededIndex(todayISO()+'-c', CHALLENGE_POOL.length)]; }
+const WEEKLY_CHALLENGE_POOL = [
+  "Ga deze week een keer zwemmen.",
+  "Speel een racketsport: tennis, badminton, padel of squash.",
+  "Ga een keer sporten of wandelen met een vriend.",
+  "Probeer een nieuwe sport of les die je nog nooit hebt gedaan.",
+  "Kook deze week 3 gezonde maaltijden zelf.",
+  "Ga een keer fietsen in plaats van de auto te pakken.",
+  "Slaap deze week elke nacht minstens 7 uur.",
+  "Maak een wandeling van minstens een uur dit weekend.",
+  "Doe een teamsport of groepsles: voetbal, volleybal, spinning...",
+  "Ga een keer klimmen of bouldering.",
+  "Doe een yoga- of pilatesles.",
+  "Ga een keer hardlopen of wandelen in de natuur."
+];
+function todaysChallenge(){ return DAILY_CHALLENGE_POOL[seededIndex(todayISO()+'-c', DAILY_CHALLENGE_POOL.length)]; }
+function thisWeeksChallenge(){ return WEEKLY_CHALLENGE_POOL[seededIndex(mondayOfWeek(todayISO())+'-wc', WEEKLY_CHALLENGE_POOL.length)]; }
 function renderChallenge(){
   setText('challengeText', todaysChallenge());
   const done = load('challenges', {});
   const btn = $('challengeBtn');
   if(!btn) return;
   if(done[todayISO()]){ btn.textContent = 'Voltooid vandaag ✓'; btn.disabled = true; }
+  else { btn.textContent = 'Voltooid ✓'; btn.disabled = false; }
+}
+function renderWeeklyChallenge(){
+  setText('weeklyChallengeText', thisWeeksChallenge());
+  const done = load('weeklyChallenges', {});
+  const weekStart = mondayOfWeek(todayISO());
+  const btn = $('weeklyChallengeBtn');
+  if(!btn) return;
+  if(done[weekStart]){ btn.textContent = 'Voltooid deze week ✓'; btn.disabled = true; }
   else { btn.textContent = 'Voltooid ✓'; btn.disabled = false; }
 }
 const challengeBtnEl = $('challengeBtn');
@@ -566,7 +594,17 @@ if(challengeBtnEl) challengeBtnEl.addEventListener('click', ()=>{
   celebrate('🎯 Uitdaging voltooid!');
   checkBadges();
 });
+const weeklyChallengeBtnEl = $('weeklyChallengeBtn');
+if(weeklyChallengeBtnEl) weeklyChallengeBtnEl.addEventListener('click', ()=>{
+  const done = load('weeklyChallenges', {});
+  done[mondayOfWeek(todayISO())] = true;
+  save('weeklyChallenges', done);
+  renderWeeklyChallenge();
+  celebrate('🏅 Weekuitdaging voltooid!');
+  checkBadges();
+});
 renderChallenge();
+renderWeeklyChallenge();
 
 /* ============ Dagboek: 1x per dag iets opschrijven ============ */
 function renderJournal(){
@@ -1103,6 +1141,7 @@ async function checkBadges(){
   const water = load('water', {});
   const weight = load('weight', {});
   const challenges = load('challenges', {});
+  const weeklyChallenges = load('weeklyChallenges', {});
   const journal = load('journal', {});
   const photos = await getAllPhotos();
 
@@ -1122,6 +1161,7 @@ async function checkBadges(){
     {id:'first_weight', emoji:'⚖️', title:'Op de weegschaal', desc:'Log je eerste gewicht', unlocked: Object.keys(weight).length>=1},
     {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel gehaald', unlocked: computeBestDailyStreak(water, getGoal('water'))>=7},
     {id:'first_challenge', emoji:'🎯', title:'Uitdager', desc:'Voltooi een dagelijkse uitdaging', unlocked: Object.keys(challenges).length>=1},
+    {id:'first_weekly_challenge', emoji:'🏅', title:'Weekuitdager', desc:'Voltooi een wekelijkse uitdaging', unlocked: Object.keys(weeklyChallenges).length>=1},
     {id:'first_journal', emoji:'📝', title:'Vastgelegd op papier', desc:'Schrijf je eerste dagboek-notitie', unlocked: Object.keys(journal).length>=1},
     {id:'journal_streak7', emoji:'✍️', title:'Trouwe schrijver', desc:'7 dagen op rij een notitie geschreven', unlocked: computeBestDailyStreak(journalBinary, 1)>=7},
     {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1 && Object.keys(journal).length>=1},
