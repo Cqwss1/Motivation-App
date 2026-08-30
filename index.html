@@ -24,9 +24,19 @@
     --sage: #5b7a6b;
     --line: rgba(243,239,230,0.12);
   }
+  :root[data-theme="light"]{
+    --bg: #f4f1ea;
+    --bg-2: #ffffff;
+    --chalk: #1c211d;
+    --chalk-dim: #6b7269;
+    --lane: #b9860f;
+    --signal: #d94420;
+    --sage: #6f8577;
+    --line: rgba(20,24,20,0.12);
+  }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--chalk);
-    font-family:'Work Sans',sans-serif; overscroll-behavior:none;}
+    font-family:'Work Sans',sans-serif; overscroll-behavior:none; transition:background .2s, color .2s;}
   #app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
     background:
       repeating-linear-gradient(180deg, transparent 0 78px, var(--line) 78px 80px),
@@ -42,6 +52,13 @@
     margin:0; text-transform:uppercase;}
   h1 span{color:var(--signal);}
   .quote{font-size:12.5px; color:var(--chalk-dim); font-style:italic; margin:10px 0 0; line-height:1.4;}
+  .rank-pill{display:inline-flex; align-items:center; gap:5px; font-family:'Oswald'; font-size:11.5px;
+    font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--lane);
+    background:rgba(232,197,71,0.1); border:1px solid rgba(232,197,71,0.3); border-radius:16px;
+    padding:5px 11px; margin-top:10px;}
+  .theme-toggle{position:absolute; top:24px; right:20px; width:38px; height:38px; padding:0;
+    background:var(--bg-2); border:1px solid var(--line); border-radius:50%; font-size:16px;
+    display:flex; align-items:center; justify-content:center;}
 
   #onboarding{position:fixed; inset:0; background:rgba(10,14,12,0.92); z-index:2000;
     display:flex; align-items:center; justify-content:center; padding:24px;}
@@ -117,6 +134,20 @@
     border:1px solid rgba(232,197,71,0.35); color:var(--lane); font-family:'Oswald'; font-size:13px;
     font-weight:600; letter-spacing:.02em; padding:6px 12px; border-radius:20px; margin-bottom:14px;}
   .streak.zero{background:transparent; border-color:var(--line); color:var(--chalk-dim);}
+
+  .freeze-row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-bottom:14px;}
+  .freeze-row span{font-size:12px; color:var(--chalk-dim); line-height:1.3;}
+  .freeze-row button{width:auto; padding:8px 12px; font-size:11.5px; flex-shrink:0;}
+
+  .custom-add{display:flex; gap:8px; margin-top:14px;}
+  .custom-add input{margin-bottom:0; flex:1;}
+  .custom-add button{width:auto; padding:13px 14px; font-size:12px; white-space:nowrap;}
+  .custom-list{margin-top:10px;}
+  .custom-item{display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:9px 12px; margin-bottom:6px;
+    font-size:12.5px; color:var(--chalk-dim);}
+  .custom-item button{width:auto; padding:2px 8px; font-size:14px; background:transparent; color:var(--chalk-dim);}
 
   .statgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .stat{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px;}
@@ -199,9 +230,11 @@
 
 <div id="app">
   <header>
+    <button class="theme-toggle" id="themeToggle" aria-label="Wissel thema">🌙</button>
     <p class="eyebrow" id="eyebrowText">Let's move.</p>
     <h1>MOTIVATION<span>.</span></h1>
     <p class="quote" id="quoteText"></p>
+    <p class="rank-pill" id="rankPill">🏅 Beginner</p>
   </header>
 
   <main>
@@ -212,18 +245,32 @@
         <h2>Daily challenge</h2>
         <p class="sub" id="challengeText">—</p>
         <button class="btn-primary" id="challengeBtn">Voltooid ✓</button>
+        <div class="custom-add">
+          <input type="text" id="customDailyInput" placeholder="Eigen dagelijkse uitdaging...">
+          <button class="btn-ghost" id="customDailyAdd">+ Toevoegen</button>
+        </div>
+        <div class="custom-list" id="customDailyList"></div>
       </div>
 
       <div class="card">
         <h2>Weekly challenge</h2>
         <p class="sub" id="weeklyChallengeText">—</p>
         <button class="btn-primary" id="weeklyChallengeBtn">Voltooid ✓</button>
+        <div class="custom-add">
+          <input type="text" id="customWeeklyInput" placeholder="Eigen wekelijkse uitdaging...">
+          <button class="btn-ghost" id="customWeeklyAdd">+ Toevoegen</button>
+        </div>
+        <div class="custom-list" id="customWeeklyList"></div>
       </div>
 
       <div class="card">
         <h2>Dagboek</h2>
         <p class="sub">Schrijf 1 ding op over vandaag — een gedachte, iets waar je trots op bent, hoe een training voelde.</p>
         <div class="streak" id="journalStreak">🔥 0 dagen streak</div>
+        <div class="freeze-row">
+          <span id="journalFreezeInfo">🧊 Vrijkaart beschikbaar deze week</span>
+          <button class="btn-ghost" id="journalFreezeBtn">Gebruiken</button>
+        </div>
         <textarea id="journalInput" rows="3" placeholder="Vandaag..."></textarea>
         <button class="btn-primary" id="journalSave">Opslaan</button>
       </div>
@@ -289,6 +336,10 @@
             </div>
           </div>
           <div class="streak" id="pushStreak">🔥 0 dagen streak</div>
+          <div class="freeze-row">
+            <span id="pushFreezeInfo">🧊 Vrijkaart beschikbaar deze week</span>
+            <button class="btn-ghost" id="pushFreezeBtn">Gebruiken</button>
+          </div>
 
           <div class="pushup-wrap">
             <video id="video" playsinline muted></video>
@@ -323,6 +374,10 @@
           </div>
         </div>
         <div class="streak" id="waterStreak">🔥 0 dagen streak</div>
+        <div class="freeze-row">
+          <span id="waterFreezeInfo">🧊 Vrijkaart beschikbaar deze week</span>
+          <button class="btn-ghost" id="waterFreezeBtn">Gebruiken</button>
+        </div>
         <div class="bignum" id="waterCount">0<small>/2,5 L</small></div>
         <div class="progress"><i id="waterProgress" style="width:0%"></i></div>
         <div style="height:14px"></div>
@@ -359,6 +414,20 @@
 
     <!-- OVERZICHT TAB -->
     <section id="tab-overzicht" class="hidden">
+      <div class="card">
+        <h2>Jouw rang</h2>
+        <p class="sub">Gebaseerd op alles wat je tot nu toe hebt gedaan.</p>
+        <div class="statgrid" id="rankDetail"></div>
+      </div>
+      <div class="card">
+        <h2>Weekoverzicht</h2>
+        <div class="monthnav">
+          <button id="weekRecapPrev" class="btn-small">‹ vorige</button>
+          <span class="monthlabel" id="weekRecapLabel">—</span>
+          <button id="weekRecapNext" class="btn-small">volgende ›</button>
+        </div>
+        <div id="weekRecapSummary"></div>
+      </div>
       <div class="card">
         <h2>Al-time totalen</h2>
         <div class="statgrid" id="statGrid"></div>
@@ -419,6 +488,62 @@ function seededIndex(str, mod){
 }
 function formatLiters(v){
   return (Math.round(v*10)/10).toString().replace('.', ',');
+}
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+/* ============ Thema: donker/licht ============ */
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = $('themeToggle');
+  if(btn) btn.textContent = theme==='light' ? '☀️' : '🌙';
+}
+function initTheme(){ applyTheme(load('theme', 'dark')); }
+const themeToggleBtn = $('themeToggle');
+if(themeToggleBtn) themeToggleBtn.addEventListener('click', ()=>{
+  const next = load('theme','dark') === 'dark' ? 'light' : 'dark';
+  save('theme', next);
+  applyTheme(next);
+  renderMonthChart(); // grafiekkleuren zijn theme-afhankelijk, opnieuw tekenen
+});
+initTheme();
+
+/* ============ Rang: titel op basis van totale progressie ============ */
+const RANKS = [
+  {min:0, name:'Beginner'},
+  {min:5, name:'Op gang'},
+  {min:15, name:'Consistent'},
+  {min:30, name:'Sterk'},
+  {min:60, name:'IJzeren wil'},
+  {min:100, name:'Legende'}
+];
+function computeScore(){
+  const runs = load('runs', []).length;
+  const fitness = load('fitness', []).length;
+  const pushups = load('pushups', {});
+  const water = load('water', {});
+  const journal = load('journal', {});
+  const pushupDays = Object.values(pushups).filter(v=>v>=getGoal('pushups')).length;
+  const waterDays = Object.values(water).filter(v=>v>=getGoal('water')).length;
+  const journalDays = Object.values(journal).filter(v=>v && v.trim()).length;
+  const badgesUnlocked = Object.keys(load('unlockedBadges', {})).length;
+  const dailyChallenges = Object.keys(load('challenges', {})).length;
+  const weeklyChallenges = Object.keys(load('weeklyChallenges', {})).length;
+  return runs + fitness + pushupDays + waterDays + journalDays + badgesUnlocked*2 + dailyChallenges + weeklyChallenges;
+}
+function currentRank(score){ let r = RANKS[0]; for(const x of RANKS){ if(score>=x.min) r=x; } return r; }
+function nextRank(score){ return RANKS.find(r=>r.min>score) || null; }
+function renderRank(){
+  const score = computeScore();
+  const rank = currentRank(score);
+  const next = nextRank(score);
+  setText('rankPill', `🏅 ${rank.name}`);
+  setHTML('rankDetail', `
+    <div class="stat"><div class="num">${rank.name}</div><div class="lbl">huidige rang</div></div>
+    <div class="stat"><div class="num">${next ? (next.min-score) : '—'}</div><div class="lbl">${next ? 'punten tot '+next.name : 'hoogste rang bereikt'}</div></div>`);
 }
 
 /* ============ Instelbare doelen (per persoon aan te passen, lokaal opgeslagen) ============ */
@@ -566,8 +691,10 @@ const WEEKLY_CHALLENGE_POOL = [
   "Doe een yoga- of pilatesles.",
   "Ga een keer hardlopen of wandelen in de natuur."
 ];
-function todaysChallenge(){ return DAILY_CHALLENGE_POOL[seededIndex(todayISO()+'-c', DAILY_CHALLENGE_POOL.length)]; }
-function thisWeeksChallenge(){ return WEEKLY_CHALLENGE_POOL[seededIndex(mondayOfWeek(todayISO())+'-wc', WEEKLY_CHALLENGE_POOL.length)]; }
+function getDailyPool(){ return DAILY_CHALLENGE_POOL.concat(load('customDaily', [])); }
+function getWeeklyPool(){ return WEEKLY_CHALLENGE_POOL.concat(load('customWeekly', [])); }
+function todaysChallenge(){ const pool = getDailyPool(); return pool[seededIndex(todayISO()+'-c', pool.length)]; }
+function thisWeeksChallenge(){ const pool = getWeeklyPool(); return pool[seededIndex(mondayOfWeek(todayISO())+'-wc', pool.length)]; }
 function renderChallenge(){
   setText('challengeText', todaysChallenge());
   const done = load('challenges', {});
@@ -603,8 +730,57 @@ if(weeklyChallengeBtnEl) weeklyChallengeBtnEl.addEventListener('click', ()=>{
   celebrate('🏅 Weekuitdaging voltooid!');
   checkBadges();
 });
+
+/* eigen uitdagingen toevoegen aan de pool */
+function renderCustomList(storageKey, containerId){
+  const items = load(storageKey, []);
+  const el = $(containerId);
+  if(!el) return;
+  el.innerHTML = items.map((txt,i)=>
+    `<div class="custom-item"><span>${escapeHtml(txt)}</span><button data-idx="${i}" data-key="${storageKey}" class="custom-remove">✕</button></div>`
+  ).join('');
+  el.querySelectorAll('.custom-remove').forEach(rmBtn=>{
+    rmBtn.addEventListener('click', ()=>{
+      const k = rmBtn.dataset.key, idx = Number(rmBtn.dataset.idx);
+      const arr = load(k, []);
+      arr.splice(idx,1);
+      save(k, arr);
+      renderCustomList(k, containerId);
+      if(k==='customDaily') renderChallenge(); else renderWeeklyChallenge();
+    });
+  });
+}
+const customDailyAddEl = $('customDailyAdd');
+if(customDailyAddEl) customDailyAddEl.addEventListener('click', ()=>{
+  const input = $('customDailyInput');
+  const val = input ? input.value.trim() : '';
+  if(!val){ showToast('Vul eerst een uitdaging in'); return; }
+  const arr = load('customDaily', []);
+  arr.push(val);
+  save('customDaily', arr);
+  if(input) input.value = '';
+  renderCustomList('customDaily','customDailyList');
+  renderChallenge();
+  showToast('Toegevoegd aan de dagelijkse pool!');
+});
+const customWeeklyAddEl = $('customWeeklyAdd');
+if(customWeeklyAddEl) customWeeklyAddEl.addEventListener('click', ()=>{
+  const input = $('customWeeklyInput');
+  const val = input ? input.value.trim() : '';
+  if(!val){ showToast('Vul eerst een uitdaging in'); return; }
+  const arr = load('customWeekly', []);
+  arr.push(val);
+  save('customWeekly', arr);
+  if(input) input.value = '';
+  renderCustomList('customWeekly','customWeeklyList');
+  renderWeeklyChallenge();
+  showToast('Toegevoegd aan de wekelijkse pool!');
+});
+
 renderChallenge();
 renderWeeklyChallenge();
+renderCustomList('customDaily','customDailyList');
+renderCustomList('customWeekly','customWeeklyList');
 
 /* ============ Dagboek: 1x per dag iets opschrijven ============ */
 function renderJournal(){
@@ -616,13 +792,21 @@ function renderJournal(){
   if(btn) btn.textContent = todayEntry ? 'Bijwerken' : 'Opslaan';
   const binary = {};
   Object.entries(all).forEach(([d,v])=>{ if(v && v.trim()) binary[d] = 1; });
-  const streak = computeDailyStreak(binary, 1);
+  const streak = computeDailyStreak(binary, 1, 'journal');
   const streakEl = $('journalStreak');
   if(streakEl){
     streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
     streakEl.classList.toggle('zero', streak===0);
   }
+  renderFreezeRow('journal', 'journalFreezeInfo', 'journalFreezeBtn');
 }
+const journalFreezeBtnEl = $('journalFreezeBtn');
+if(journalFreezeBtnEl) journalFreezeBtnEl.addEventListener('click', ()=>{
+  const all = load('journal', {});
+  const binary = {};
+  Object.entries(all).forEach(([d,v])=>{ if(v && v.trim()) binary[d] = 1; });
+  useFreeze('journal', 1, binary, ()=>{ renderJournal(); checkBadges(); });
+});
 const journalSaveEl = $('journalSave');
 if(journalSaveEl) journalSaveEl.addEventListener('click', ()=>{
   const input = $('journalInput');
@@ -647,7 +831,7 @@ document.querySelectorAll('nav .tab').forEach(btn=>{
     document.querySelectorAll('nav .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     TABS.forEach(t=>{ const el=$('tab-'+t); if(el) el.classList.toggle('hidden', btn.dataset.tab!==t); });
-    if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); checkBadges(); }
+    if(btn.dataset.tab === 'overzicht'){ renderOverzicht(); renderMonthChart(); renderWeekRecap(); renderRank(); checkBadges(); }
     if(btn.dataset.tab === 'fotos'){ renderPhotoGallery(); }
     if(btn.dataset.tab === 'water'){ renderWater(); }
     if(btn.dataset.tab === 'gewicht'){ renderWeight(); }
@@ -746,29 +930,63 @@ renderWeeklyTracker('runs', runIds);
 renderWeeklyTracker('fitness', fitnessIds);
 
 /* ============ Push-ups (instelbaar dagdoel) ============ */
-function computeDailyStreak(countsObj, goal){
+/* ============ Streak-vrijkaarten: 1x per week een gemiste dag beschermen ============ */
+function isFrozen(category, dateKey){
+  if(!category) return false;
+  const freezes = load('freezes', {});
+  return !!(freezes[category] && freezes[category].includes(dateKey));
+}
+function computeDailyStreak(countsObj, goal, category){
   const oneDay = 86400000;
   let cursor = new Date(todayISO());
-  if((countsObj[todayISO()]||0) < goal) cursor = new Date(cursor.getTime() - oneDay);
+  const metGoal = (key) => (countsObj[key]||0) >= goal || isFrozen(category, key);
+  if(!metGoal(todayISO())) cursor = new Date(cursor.getTime() - oneDay);
   let streak = 0;
   while(true){
     const key = cursor.toISOString().slice(0,10);
-    if((countsObj[key]||0) >= goal){ streak++; cursor = new Date(cursor.getTime() - oneDay); }
+    if(metGoal(key)){ streak++; cursor = new Date(cursor.getTime() - oneDay); }
     else break;
   }
   return streak;
 }
-function computeBestDailyStreak(countsObj, goal){
+function computeBestDailyStreak(countsObj, goal, category){
   const days = Object.keys(countsObj).sort();
   if(days.length===0) return 0;
   let best=0, cur=0, cursor=new Date(days[0]);
   const end = new Date(todayISO());
   while(cursor <= end){
     const key = cursor.toISOString().slice(0,10);
-    if((countsObj[key]||0) >= goal){ cur++; best=Math.max(best,cur); } else cur=0;
+    if((countsObj[key]||0) >= goal || isFrozen(category, key)){ cur++; best=Math.max(best,cur); } else cur=0;
     cursor = new Date(cursor.getTime()+86400000);
   }
   return best;
+}
+function renderFreezeRow(category, infoId, btnId){
+  const weekStart = mondayOfWeek(todayISO());
+  const usage = load('freezeUsage', {});
+  const usedThisWeek = !!(usage[category] && usage[category][weekStart]);
+  setText(infoId, usedThisWeek ? '🧊 Vrijkaart deze week al gebruikt' : '🧊 Vrijkaart beschikbaar deze week');
+  const btn = $(btnId);
+  if(btn){
+    btn.disabled = usedThisWeek;
+    btn.textContent = usedThisWeek ? 'Gebruikt' : 'Gebruiken';
+  }
+}
+function useFreeze(category, goal, countsObj, onDone){
+  const weekStart = mondayOfWeek(todayISO());
+  const usage = load('freezeUsage', {});
+  if(usage[category] && usage[category][weekStart]){ showToast('Je vrijkaart is deze week al gebruikt'); return; }
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0,10);
+  if((countsObj[yesterday]||0) >= goal){ showToast('Gisteren had je je doel al gehaald — geen vrijkaart nodig'); return; }
+  const freezes = load('freezes', {});
+  if(!freezes[category]) freezes[category] = [];
+  if(!freezes[category].includes(yesterday)) freezes[category].push(yesterday);
+  save('freezes', freezes);
+  if(!usage[category]) usage[category] = {};
+  usage[category][weekStart] = true;
+  save('freezeUsage', usage);
+  celebrate('🧊 Vrijkaart gebruikt — streak hersteld!');
+  if(onDone) onDone();
 }
 function renderPushups(){
   const goal = getGoal('pushups');
@@ -778,18 +996,23 @@ function renderPushups(){
   setText('liveCount', count);
   setText('pushGoalLabel', `doel: ${goal}`);
   const bar = $('pushProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
-  const streak = computeDailyStreak(all, goal);
+  const streak = computeDailyStreak(all, goal, 'pushups');
   const streakEl = $('pushStreak');
   if(streakEl){
     streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
     streakEl.classList.toggle('zero', streak===0);
   }
+  renderFreezeRow('pushups', 'pushFreezeInfo', 'pushFreezeBtn');
   if(count >= goal){
     const ck = `push:${todayISO()}:${goal}`;
     if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate(`🏆 Push-up doel gehaald: ${goal}!`); }
   }
   updateBadgeCount();
 }
+const pushFreezeBtnEl = $('pushFreezeBtn');
+if(pushFreezeBtnEl) pushFreezeBtnEl.addEventListener('click', ()=>{
+  useFreeze('pushups', getGoal('pushups'), load('pushups', {}), ()=>{ renderPushups(); checkBadges(); });
+});
 function addPushup(n=1){
   const all = load('pushups', {});
   all[todayISO()] = (all[todayISO()] || 0) + n;
@@ -888,18 +1111,23 @@ function renderWater(){
   const count = all[todayISO()] || 0;
   setHTML('waterCount', `${formatLiters(count)}<small>/${formatLiters(goal)} L</small>`);
   const bar = $('waterProgress'); if(bar) bar.style.width = Math.min(100, (count/goal)*100) + '%';
-  const streak = computeDailyStreak(all, goal);
+  const streak = computeDailyStreak(all, goal, 'water');
   const streakEl = $('waterStreak');
   if(streakEl){
     streakEl.textContent = `🔥 ${streak} ${streak===1?'dag':'dagen'} streak`;
     streakEl.classList.toggle('zero', streak===0);
   }
+  renderFreezeRow('water', 'waterFreezeInfo', 'waterFreezeBtn');
   if(count >= goal){
     const ck = `water:${todayISO()}:${goal}`;
     if(!alreadyCelebrated(ck)){ markCelebrated(ck); celebrate('💧 Waterdoel gehaald!'); }
   }
   updateBadgeCount();
 }
+const waterFreezeBtnEl = $('waterFreezeBtn');
+if(waterFreezeBtnEl) waterFreezeBtnEl.addEventListener('click', ()=>{
+  useFreeze('water', getGoal('water'), load('water', {}), ()=>{ renderWater(); checkBadges(); });
+});
 function addWater(delta){
   const all = load('water', {});
   let v = Math.round(((all[todayISO()]||0) + delta) * 10) / 10; // afronden voorkomt float-afrondingsfouten (0.1+0.2 etc.)
@@ -1093,9 +1321,13 @@ function renderOverzicht(){
   setHTML('bestGrid', `
     <div class="stat"><div class="num">${computeBestWeeklyStreak(runs, getGoal('runs'))}</div><div class="lbl">beste loop-streak (wkn)</div></div>
     <div class="stat"><div class="num">${computeBestWeeklyStreak(fitness, getGoal('fitness'))}</div><div class="lbl">beste fitness-streak (wkn)</div></div>
-    <div class="stat"><div class="num">${computeBestDailyStreak(pushups, getGoal('pushups'))}</div><div class="lbl">beste push-up streak (dgn)</div></div>`);
+    <div class="stat"><div class="num">${computeBestDailyStreak(pushups, getGoal('pushups'), 'pushups')}</div><div class="lbl">beste push-up streak (dgn)</div></div>`);
 }
 
+function cssVar(name, fallback){
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
 let monthOffset = 0;
 function renderMonthChart(){
   const base = new Date(); base.setDate(1); base.setMonth(base.getMonth()+monthOffset);
@@ -1108,6 +1340,11 @@ function renderMonthChart(){
   const runs = load('runs', []);
   const fitness = load('fitness', []);
   const pushGoal = getGoal('pushups');
+  const laneColor = cssVar('--lane', '#e8c547');
+  const sageColor = cssVar('--sage', '#5b7a6b');
+  const signalColor = cssVar('--signal', '#ff5a2b');
+  const chalkColor = cssVar('--chalk', '#f3efe6');
+  const lineColor = cssVar('--line', 'rgba(243,239,230,0.08)');
 
   const barSlot=16, barW=9, chartH=90;
   let maxVal = pushGoal;
@@ -1122,17 +1359,61 @@ function renderMonthChart(){
     const val = pushups[key]||0;
     const h = Math.max(Math.round((val/maxVal)*chartH), val>0?2:0);
     const x = i*barSlot+4, y = chartH-h;
-    const color = val>=pushGoal ? '#e8c547' : (val>0 ? '#5b7a6b' : 'rgba(243,239,230,0.08)');
+    const color = val>=pushGoal ? laneColor : (val>0 ? sageColor : lineColor);
     bars += `<rect x="${x}" y="${y}" width="${barW}" height="${Math.max(h,1)}" rx="2" fill="${color}"/>`;
     const ry = chartH+10;
-    if(runs.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry}" r="2.6" fill="#ff5a2b"/>`;
-    if(fitness.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry+7}" r="2.6" fill="#f3efe6"/>`;
+    if(runs.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry}" r="2.6" fill="${signalColor}"/>`;
+    if(fitness.includes(key)) dots += `<circle cx="${x+barW/2}" cy="${ry+7}" r="2.6" fill="${chalkColor}"/>`;
   }
   const totalWidth = daysInMonth*barSlot+8;
   setHTML('monthChart', `<svg viewBox="0 0 ${totalWidth} ${chartH+22}" style="width:100%; height:150px;">${bars}${dots}</svg>`);
 }
 const monthPrevEl = $('monthPrev'); if(monthPrevEl) monthPrevEl.addEventListener('click', ()=>{ monthOffset--; renderMonthChart(); });
 const monthNextEl = $('monthNext'); if(monthNextEl) monthNextEl.addEventListener('click', ()=>{ if(monthOffset<0){ monthOffset++; renderMonthChart(); } });
+
+/* ============ Weekoverzicht: automatische samenvatting, terug te bekijken ============ */
+let weekRecapOffset = 0;
+function formatWeekRangeLabel(mondayDate){
+  const end = new Date(mondayDate); end.setDate(end.getDate()+6);
+  const fmt = (d)=>d.toLocaleDateString('nl-NL', {day:'numeric', month:'short'});
+  return `${fmt(mondayDate)} – ${fmt(end)}`;
+}
+function renderWeekRecap(){
+  const base = new Date(mondayOfWeek(todayISO()));
+  base.setDate(base.getDate() + weekRecapOffset*7);
+  const weekStart = base.toISOString().slice(0,10);
+  const weekDates = [...Array(7)].map((_,i)=>{ const d=new Date(base); d.setDate(d.getDate()+i); return d.toISOString().slice(0,10); });
+
+  const runs = load('runs', []);
+  const fitness = load('fitness', []);
+  const pushups = load('pushups', {});
+  const water = load('water', {});
+  const journal = load('journal', {});
+  const challenges = load('challenges', {});
+  const weeklyChallenges = load('weeklyChallenges', {});
+
+  const runCount = weekDates.filter(d=>runs.includes(d)).length;
+  const fitnessCount = weekDates.filter(d=>fitness.includes(d)).length;
+  const totalPush = weekDates.reduce((sum,d)=>sum+(pushups[d]||0),0);
+  const totalWater = weekDates.reduce((sum,d)=>sum+(water[d]||0),0);
+  const journalCount = weekDates.filter(d=>journal[d] && journal[d].trim()).length;
+  const dailyChallengeCount = weekDates.filter(d=>challenges[d]).length;
+  const weeklyChallengeDone = !!weeklyChallenges[weekStart];
+
+  setText('weekRecapLabel', formatWeekRangeLabel(base));
+  const nextBtn = $('weekRecapNext'); if(nextBtn) nextBtn.disabled = (weekRecapOffset >= 0);
+  setHTML('weekRecapSummary', `
+    <div class="statgrid">
+      <div class="stat"><div class="num">${runCount}</div><div class="lbl">keer gelopen</div></div>
+      <div class="stat"><div class="num">${fitnessCount}</div><div class="lbl">keer fitness</div></div>
+      <div class="stat"><div class="num">${totalPush}</div><div class="lbl">push-ups totaal</div></div>
+      <div class="stat"><div class="num">${formatLiters(totalWater)} L</div><div class="lbl">water gedronken</div></div>
+      <div class="stat"><div class="num">${journalCount}</div><div class="lbl">dagboek-notities</div></div>
+      <div class="stat"><div class="num">${dailyChallengeCount + (weeklyChallengeDone?1:0)}</div><div class="lbl">uitdagingen voltooid</div></div>
+    </div>`);
+}
+const weekRecapPrevEl = $('weekRecapPrev'); if(weekRecapPrevEl) weekRecapPrevEl.addEventListener('click', ()=>{ weekRecapOffset--; renderWeekRecap(); });
+const weekRecapNextEl = $('weekRecapNext'); if(weekRecapNextEl) weekRecapNextEl.addEventListener('click', ()=>{ if(weekRecapOffset<0){ weekRecapOffset++; renderWeekRecap(); } });
 
 async function checkBadges(){
   const runs = load('runs', []);
@@ -1155,15 +1436,15 @@ async function checkBadges(){
     {id:'first_100', emoji:'💯', title:'Eerste honderd', desc:'100 push-ups op één dag', unlocked: Object.values(pushups).some(v=>v>=100)},
     {id:'run_streak3', emoji:'🔥', title:'Op dreef', desc:'3 weken op rij je loopdoel gehaald', unlocked: computeBestWeeklyStreak(runs, getGoal('runs'))>=3},
     {id:'fitness_streak3', emoji:'⚡', title:'Consistent', desc:'3 weken op rij je fitnessdoel gehaald', unlocked: computeBestWeeklyStreak(fitness, getGoal('fitness'))>=3},
-    {id:'push_streak7', emoji:'🏆', title:'IJzeren week', desc:'7 dagen op rij je push-up doel gehaald', unlocked: computeBestDailyStreak(pushups, getGoal('pushups'))>=7},
+    {id:'push_streak7', emoji:'🏆', title:'IJzeren week', desc:'7 dagen op rij je push-up doel gehaald', unlocked: computeBestDailyStreak(pushups, getGoal('pushups'), 'pushups')>=7},
     {id:'push_1000', emoji:'💪', title:'Duizend', desc:'1000 push-ups totaal', unlocked: totalPushups>=1000},
     {id:'first_photo', emoji:'📷', title:'Vastgelegd', desc:'Voeg je eerste foto toe', unlocked: photos.length>=1},
     {id:'first_weight', emoji:'⚖️', title:'Op de weegschaal', desc:'Log je eerste gewicht', unlocked: Object.keys(weight).length>=1},
-    {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel gehaald', unlocked: computeBestDailyStreak(water, getGoal('water'))>=7},
+    {id:'water_week', emoji:'💧', title:'Gehydrateerd', desc:'7 dagen op rij waterdoel gehaald', unlocked: computeBestDailyStreak(water, getGoal('water'), 'water')>=7},
     {id:'first_challenge', emoji:'🎯', title:'Uitdager', desc:'Voltooi een dagelijkse uitdaging', unlocked: Object.keys(challenges).length>=1},
     {id:'first_weekly_challenge', emoji:'🏅', title:'Weekuitdager', desc:'Voltooi een wekelijkse uitdaging', unlocked: Object.keys(weeklyChallenges).length>=1},
     {id:'first_journal', emoji:'📝', title:'Vastgelegd op papier', desc:'Schrijf je eerste dagboek-notitie', unlocked: Object.keys(journal).length>=1},
-    {id:'journal_streak7', emoji:'✍️', title:'Trouwe schrijver', desc:'7 dagen op rij een notitie geschreven', unlocked: computeBestDailyStreak(journalBinary, 1)>=7},
+    {id:'journal_streak7', emoji:'✍️', title:'Trouwe schrijver', desc:'7 dagen op rij een notitie geschreven', unlocked: computeBestDailyStreak(journalBinary, 1, 'journal')>=7},
     {id:'all_rounder', emoji:'🌟', title:'Allrounder', desc:'Alles minstens 1x gelogd', unlocked: runs.length>=1 && fitness.length>=1 && totalPushups>=1 && Object.keys(water).length>=1 && Object.keys(weight).length>=1 && Object.keys(journal).length>=1},
   ];
 
@@ -1187,10 +1468,12 @@ async function checkBadges(){
       </div>`;
     }).join('');
   }
+  renderRank();
 }
 
 /* ============ Init ============ */
 refreshGoalDisplays();
+renderRank();
 checkBadges();
 </script>
 </body>
